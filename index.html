@@ -39,7 +39,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .note{font-size:10px;color:#7fa9ba;text-align:center;margin-top:9px}
 </style></head>
 <body><div id="game">
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.1</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.2</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
@@ -57,7 +57,7 @@ const atlas=new Image();atlas.src='data:image/webp;base64,UklGRpISAABXRUJQVlA4II
 const normalIds=[0,1,2,3,4,5,7,8,9];
 let mode='ready',score=0,combo=0,maxCombo=0,leaks=0,hits=0,best=0,perfect=0,curBeat=-1,startAt=0,pausedAt=0,notes=[],cues=[],counts=Array(10).fill(0),nextChunk=0,nextAudioHalf=0,nextCue=0,showTextUntil=0,flashLanes=[0,0,0],bgmOn=true,sfxOn=true,ac,master,music,fx,stepIndex=0,previousLane=1,previousBeat=-3,defensePulse=0;
 try{best=Number(localStorage.getItem('morasu-v09-best'))||0}catch(e){}
-function bpmAt(b){return Math.min(176,128+Math.floor(Math.max(0,b)/32)*6)}
+function bpmAt(b){return usingGarageBand?128:Math.min(176,128+Math.floor(Math.max(0,b)/32)*6)}
 const bt=[0];function timeOf(b){const i=Math.floor(Math.max(0,b));while(bt.length<=i+1){let p=bt.length-1;bt.push(bt[p]+60000/bpmAt(p))}return startAt+bt[i]+(b-i)*(bt[i+1]-bt[i])}
 function show(t){$('#judgement').textContent=t;showTextUntil=performance.now()+370}
 function hud(t){$('#score').textContent=score.toLocaleString('ja-JP');$('#combo').textContent=combo;$('#best').textContent=best.toLocaleString('ja-JP');$('#leaks').textContent=leaks+'/3';$('#bpm').textContent=bpmAt(curBeat);let s=Math.floor(Math.max(0,(t-startAt)/1000));$('#clock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
@@ -72,10 +72,17 @@ else{fillBar(b,level);fillBar(b+4,level);fillBar(b+8,level);fillBar(b+12,level)}
 }
 function ensure(t){let n=0;while(timeOf(nextChunk)<t+8500&&n++<9){build(nextChunk);nextChunk+=16}notes.sort((a,b)=>a.beat-b.beat)}
 function save(){if(score>best){best=score;try{localStorage.setItem('morasu-v09-best',best)}catch(e){}}}
-function start(){unlock();mode='play';score=combo=maxCombo=leaks=hits=perfect=0;counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;startAt=performance.now()+950;flashLanes=[0,0,0];$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt)}
-function finish(){if(mode!=='play')return;mode='over';save();$('#title').textContent='🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#share').hidden=false;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;silence()}
-function pause(){if(mode!=='play')return;pausedAt=performance.now();mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#share').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence()}
-function resume(){if(mode!=='pause')return;unlock();startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore()}
+async function start(){
+ if(mode==='loading')return;
+ unlock();mode='loading';
+ $('#start').disabled=true;$('#start').textContent='🎵 音源を準備中…';
+ try{if(clipLoad)await clipLoad;if(clipData&&!clipBuffer&&ac)clipBuffer=await ac.decodeAudioData(clipData.slice(0))}catch(e){console.warn('Music track fallback',e)}
+ usingGarageBand=!!clipBuffer;
+ $('#start').disabled=false;$('#start').textContent='▶ ゲームスタート';
+ mode='play';score=combo=maxCombo=leaks=hits=perfect=0;counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;startAt=performance.now()+950;flashLanes=[0,0,0];$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt);if(usingGarageBand)playClip(startAt,0)}
+function finish(){if(mode!=='play')return;mode='over';stopClip();save();$('#title').textContent='🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#share').hidden=false;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;silence()}
+function pause(){if(mode!=='play')return;pausedAt=performance.now();mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#share').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
+function resume(){if(mode!=='pause')return;unlock();startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore();if(usingGarageBand)playClip(performance.now(),Math.max(0,(pausedAt-(startAt-(performance.now()-pausedAt)))/1000)%clipBuffer.duration)}
 function attack(lane){if(mode!=='play')return;const now=performance.now();flashLanes[lane]=now+160;let found=null,distance=126;for(const e of notes){if(e.status!==0||e.lane!==lane)continue;const d=Math.abs(timeOf(e.beat)-now);if(d<distance){found=e;distance=d}}if(!found){let wrong=notes.some(e=>e.status===0&&Math.abs(timeOf(e.beat)-now)<140&&e.lane!==lane);combo=0;show(wrong?'WRONG LANE':'TOO EARLY');$('#judgement').style.color='#ff9ab4';hitFx(false);hud(now);return}
 found.status=1;hits++;counts[found.id]++;combo++;maxCombo=Math.max(combo,maxCombo);let grade=distance<=43?'PERFECT':distance<=88?'GREAT':'GOOD';if(grade==='PERFECT')perfect++;let points=(grade==='PERFECT'?250:grade==='GREAT'?150:80)*(found.fast?2:1)+Math.min(120,combo*3);score+=points;save();show(grade+' +'+points);$('#judgement').style.color=grade==='PERFECT'?'#ffe98c':'#7cf9e7';hitFx(true,grade,found.fast);hud(now)}
 function checkMiss(t){for(const e of notes){if(e.status===0&&t>timeOf(e.beat)+139){e.status=2;leaks++;combo=0;$('#judgement').style.color='#ff8d9f';show('🔓 MISS!');hitFx(false);if(leaks>=3){finish();break}}}}
@@ -122,6 +129,27 @@ function makeDrumSamples(){
  }
  drumSamples={kick:make('kick',.42),snare:make('snare',.29),clap:make('clap',.26),hat:make('hat',.13),open:make('open',.36),tom:make('tom',.28),rim:make('rim',.10)};
 }
+
+let clipData=null,clipBuffer=null,clipSource=null,usingGarageBand=false,clipLoad=null;
+try{
+ clipLoad=fetch('./bgm.mp3?v=12').then(r=>r.ok?r.arrayBuffer():null).then(data=>{clipData=data}).catch(()=>{clipData=null});
+}catch(e){}
+function stopClip(){
+ if(!clipSource)return;
+ try{clipSource.stop()}catch(e){}
+ try{clipSource.disconnect()}catch(e){}
+ clipSource=null;
+}
+function playClip(when,offset){
+ if(!clipBuffer||!ac||ac.state!=='running')return;
+ stopClip();
+ let s=ac.createBufferSource();s.buffer=clipBuffer;
+ s.loop=true;s.loopStart=0;s.loopEnd=clipBuffer.duration;
+ s.connect(music);
+ let pos=((offset%clipBuffer.duration)+clipBuffer.duration)%clipBuffer.duration;
+ try{s.start(at(when),pos);clipSource=s}catch(e){console.warn('Track playback error',e)}
+}
+
 function unlock(){
  try{
   if(!ac){
@@ -176,7 +204,7 @@ function stab(t,root){
 const bassRoots=[55,43.6535,49,41.2034],stabRoots=[220,174.614,196,164.814];
 const bassPattern=[0,0,7,0,3,7,0,10,0,0,7,3,0,10,7,3];
 function beatMusic(t,step){
- if(!bgmOn||!ac||ac.state!=='running')return;
+ if(usingGarageBand||!bgmOn||!ac||ac.state!=='running')return;
  const beat=Math.floor(step/2),off=step%2===1,bar=Math.floor(beat/4);
  if(!off){
   playDrum('kick',t,.77);
