@@ -168,6 +168,16 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
  .help-step{padding:5px}
  #helpScreen{gap:5px}
 }
+
+/* v1.8 iPhone portrait webview: retain the existing forced landscape rotation. */
+@media(orientation:portrait) and (max-width:700px){
+ #game{position:fixed;top:0;left:100dvw;transform:rotate(90deg);transform-origin:top left}
+}
+.menu-virus:nth-of-type(2){left:5%;top:8%;background-position:0 0}
+.menu-virus:nth-of-type(3){left:23%;top:22%;background-position:25% 0;animation-delay:.3s}
+.menu-virus:nth-of-type(4){left:68%;top:10%;background-position:75% 0;animation-delay:.8s}
+.menu-virus:nth-of-type(5){right:5%;top:29%;background-position:0 100%;animation-delay:1.2s}
+.menu-virus:nth-of-type(6){right:29%;top:0%;background-position:25% 100%;animation-delay:.4s}
 </style></head>
 <body><div id="game">
 <section id="menuScreen" role="region" aria-label="タイトル画面">
