@@ -17,7 +17,7 @@ h1{font-size:clamp(22px,5.7vw,29px);letter-spacing:.01em;margin:7px 0 9px;font-w
 .beatdots{display:flex;gap:5px}
 .beatdots b{font-size:12px;font-weight:600;display:grid;place-items:center;border:1px solid #4a7187;border-radius:99px;background:#294a5c;width:25px;height:25px}
 .beatdots b.active{color:#082438;background:#60ffdc;box-shadow:0 0 16px #49f3e8}
-.arena{height:clamp(275px,43vh,375px);position:relative;border:1px solid #4383a1;border-radius:12px;background:#07162a;overflow:hidden;touch-action:none}
+.arena{height:clamp(330px,54vh,500px);position:relative;border:1px solid #4383a1;border-radius:12px;background:#07162a;overflow:hidden;touch-action:none}
 canvas{width:100%;height:100%;display:block;touch-action:none}
 .hint{position:absolute;left:8px;right:8px;top:9px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;font-size:11px;font-weight:800;text-shadow:0 1px 8px #020910}
 .hint span{padding:4px 6px;background:#091f36d6;border-radius:8px}
@@ -39,14 +39,14 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .note{font-size:10px;color:#7fa9ba;text-align:center;margin-top:9px}
 </style></head>
 <body><div id="game">
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V0.9</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.0</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
 <div class="arena" id="arena"><canvas id="canvas"></canvas><div class="hint"><span>🛡️ 3-LANE DEFENSE</span><span id="warning">拍に合わせて防御！</span></div><div id="judgement"></div>
-<div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">3レーン防衛、開始！</h2><p id="desc">奥から来るロゴを正しいレーンでタップ！<br>タイミングがズレると情報漏洩。<br>⚠️ ピ・ピ → 2拍休み → 高速2連！</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><button id="share" class="share" hidden>𝕏 スコアを共有</button></div></div></div>
-<div class="lanepads"><button class="pad" data-lane="0">↑ 上<small>TOP / 1</small></button><button class="pad" data-lane="1">● 中<small>MIDDLE / 2</small></button><button class="pad" data-lane="2">↓ 下<small>BOTTOM / 3</small></button></div>
-<div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>正しいレーン ＋ 拍に合わせてタップ</span><button id="pause">一時停止</button></div>
+<div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">3レーン防衛、開始！</h2><p id="desc">奥から来るロゴのレーンを直接タップ！<br>タイミングがズレると情報漏洩。<br>⚠️①と⚠️②がそれぞれのレーンに出現！</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><button id="share" class="share" hidden>𝕏 スコアを共有</button></div></div></div>
+
+<div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>画面の上・中・下を直接タップ</span><button id="pause">一時停止</button></div>
 <div class="note">高速：シロイヌタケル便 ｜ 音源：ブラウザ生成オリジナルテクノ</div>
 </div><script>
 (function(){
@@ -62,22 +62,22 @@ const bt=[0];function timeOf(b){const i=Math.floor(Math.max(0,b));while(bt.lengt
 function show(t){$('#judgement').textContent=t;showTextUntil=performance.now()+370}
 function hud(t){$('#score').textContent=score.toLocaleString('ja-JP');$('#combo').textContent=combo;$('#best').textContent=best.toLocaleString('ja-JP');$('#leaks').textContent=leaks+'/3';$('#bpm').textContent=bpmAt(curBeat);let s=Math.floor(Math.max(0,(t-startAt)/1000));$('#clock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 function pickLane(){let x=Math.floor(Math.random()*3);if(Math.random()<.72&&x===previousLane)x=(x+1+Math.floor(Math.random()*2))%3;previousLane=x;return x}
-function add(b,fast=false){if(b-previousBeat<.7)return;const lane=pickLane();notes.push({beat:b,lane,id:fast?6:normalIds[Math.floor(Math.random()*normalIds.length)],fast,status:0});previousBeat=b}
-function cue(b,kind){cues.push({beat:b,kind})}
+function add(b,fast=false,forcedLane=null){if(b-previousBeat<.7)return null;const lane=forcedLane===null?pickLane():forcedLane;previousLane=lane;const note={beat:b,lane,id:fast?6:normalIds[Math.floor(Math.random()*normalIds.length)],fast,status:0};notes.push(note);previousBeat=b;return note}
+function cue(b,kind,lane,targetBeat,order){cues.push({beat:b,kind,lane,targetBeat,order})}
 function fillBar(b,level,omit=[]){const positions=level===0?[0,2]:level===1?[0,1,3]:level===2?[0,1,2,3]:[0,.75,1.75,2.75,3.75];positions.forEach(off=>{if(!omit.some(i=>Math.abs(i-off)<.09)&&Math.random()<(level<2?.91:.97))add(b+off)})}
 function build(b){const stage=Math.floor(b/16),level=Math.min(3,Math.floor(Math.max(0,b)/64));if(stage===0){add(4);add(6);add(7);add(9);add(11);add(12);add(14);return}
-if(stage%3===1){fillBar(b,level);cue(b+4,'double');cue(b+5,'double');add(b+8,true);add(b+9,true);fillBar(b+12,level)}
-else if(stage%3===2){fillBar(b,level);cue(b+5,'single');add(b+7,true);fillBar(b+8,level);fillBar(b+12,level)}
+if(stage%3===1){fillBar(b,level);const first=add(b+8,true);const secondLane=(first.lane+1+Math.floor(Math.random()*2))%3;const second=add(b+9,true,secondLane);cue(b+4,'double',first.lane,b+8,1);cue(b+5,'double',second.lane,b+9,2);fillBar(b+12,level)}
+else if(stage%3===2){fillBar(b,level);const single=add(b+7,true);cue(b+5,'single',single.lane,b+7,1);fillBar(b+8,level);fillBar(b+12,level)}
 else{fillBar(b,level);fillBar(b+4,level);fillBar(b+8,level);fillBar(b+12,level)}
 }
 function ensure(t){let n=0;while(timeOf(nextChunk)<t+8500&&n++<9){build(nextChunk);nextChunk+=16}notes.sort((a,b)=>a.beat-b.beat)}
 function save(){if(score>best){best=score;try{localStorage.setItem('morasu-v09-best',best)}catch(e){}}}
-function start(){unlock();mode='play';score=combo=maxCombo=leaks=hits=perfect=0;counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;startAt=performance.now()+950;flashLanes=[0,0,0];$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';ensure(startAt);hud(startAt)}
+function start(){unlock();mode='play';score=combo=maxCombo=leaks=hits=perfect=0;counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;startAt=performance.now()+950;flashLanes=[0,0,0];$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.55:0,ac.currentTime,.015);ensure(startAt);hud(startAt)}
 function finish(){if(mode!=='play')return;mode='over';save();$('#title').textContent='🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#share').hidden=false;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;silence()}
 function pause(){if(mode!=='play')return;pausedAt=performance.now();mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#share').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence()}
 function resume(){if(mode!=='pause')return;unlock();startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore()}
 function attack(lane){if(mode!=='play')return;const now=performance.now();flashLanes[lane]=now+160;let found=null,distance=126;for(const e of notes){if(e.status!==0||e.lane!==lane)continue;const d=Math.abs(timeOf(e.beat)-now);if(d<distance){found=e;distance=d}}if(!found){let wrong=notes.some(e=>e.status===0&&Math.abs(timeOf(e.beat)-now)<140&&e.lane!==lane);combo=0;show(wrong?'WRONG LANE':'TOO EARLY');$('#judgement').style.color='#ff9ab4';hitFx(false);hud(now);return}
-found.status=1;hits++;counts[found.id]++;combo++;maxCombo=Math.max(combo,maxCombo);let grade=distance<=43?'PERFECT':distance<=88?'GREAT':'GOOD';if(grade==='PERFECT')perfect++;let points=(grade==='PERFECT'?250:grade==='GREAT'?150:80)*(found.fast?2:1)+Math.min(120,combo*3);score+=points;save();show(grade+' +'+points);$('#judgement').style.color=grade==='PERFECT'?'#ffe98c':'#7cf9e7';hitFx(true);hud(now)}
+found.status=1;hits++;counts[found.id]++;combo++;maxCombo=Math.max(combo,maxCombo);let grade=distance<=43?'PERFECT':distance<=88?'GREAT':'GOOD';if(grade==='PERFECT')perfect++;let points=(grade==='PERFECT'?250:grade==='GREAT'?150:80)*(found.fast?2:1)+Math.min(120,combo*3);score+=points;save();show(grade+' +'+points);$('#judgement').style.color=grade==='PERFECT'?'#ffe98c':'#7cf9e7';hitFx(true,grade);hud(now)}
 function checkMiss(t){for(const e of notes){if(e.status===0&&t>timeOf(e.beat)+139){e.status=2;leaks++;combo=0;$('#judgement').style.color='#ff8d9f';show('🔓 MISS!');hitFx(false);if(leaks>=3){finish();break}}}}
 function unlock(){try{if(!ac){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;ac=new AC();master=ac.createDynamicsCompressor();master.threshold.value=-18;master.knee.value=15;master.ratio.value=5;master.attack.value=.006;master.release.value=.18;master.connect(ac.destination);music=ac.createGain();music.gain.value=bgmOn?.43:0;music.connect(master);fx=ac.createGain();fx.gain.value=sfxOn?.55:0;fx.connect(master);noiseBuffer=ac.createBuffer(1,ac.sampleRate,ac.sampleRate);let data=noiseBuffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1}if(ac.state==='suspended')ac.resume()}catch(e){}}
 function at(t){return ac.currentTime+Math.max(.006,(t-performance.now())/1000)}
@@ -89,7 +89,19 @@ function bass(t,f){osc(t,f,.20,.21,'sawtooth',music,530);osc(t,f/2,.17,.11,'sine
 function chord(t,root){[1,1.2,1.5].forEach((ratio,i)=>osc(t,root*ratio,.23,.044,'sawtooth',music,1050+i*210))}
 function beatMusic(t,n){if(!bgmOn||!ac||ac.state!=='running')return;let q=Math.floor(n/2),on=n%2===0;if(on){kick(t);if(q%4===1||q%4===3){noise(t,.16,.16,1300,music);osc(t,183,.08,.045,'triangle',music)}if(q%2===0){let roots=[110,87.31,98,82.41];chord(t,roots[Math.floor(q/8)%4]*2)}}noise(t,on?.055:.075,on?.035:.075,on?5500:6800,music);let bassRoots=[55,43.65,49,41.2];if(!on||q%4===0){let root=bassRoots[Math.floor(q/8)%4];bass(t,root*((q%4===3)?1.5:1))}if(n%4===3||n%8===0){let a=[440,523.25,659.25,587.33,392,523.25,698.46,659.25];osc(t,a[Math.floor(n/2)%a.length],.09,.029,'triangle',music,2400)}}
 function cueFx(t,p){if(!ac||ac.state!=='running'||!sfxOn)return;osc(t,p===0?1250:1720,.14,.20,'square',fx,3200);osc(t+32,p===0?1850:2200,.06,.08,'sine',fx)}
-function hitFx(ok){if(!ac||ac.state!=='running'||!sfxOn)return;let t=performance.now();osc(t,ok?870:145,ok?.08:.22,ok?.16:.17,ok?'triangle':'sawtooth',fx,ok?2800:900)}
+function hitFx(ok,grade='MISS'){
+ if(!ac||ac.state!=='running'||!sfxOn)return;
+ const t=performance.now();
+ if(!ok){noise(t,.095,.10,1700,fx);osc(t,110,.17,.10,'triangle',fx,700);return}
+ // A layered acoustic-like drum strike: sharp snare crack + low tom punch + short rim click.
+ const power=grade==='PERFECT'?1:grade==='GREAT'?.76:.52;
+ noise(t,.11,.32*power,1250,fx);
+ noise(t+.015,.06,.11*power,5500,fx);
+ let T=at(t),o=ac.createOscillator(),v=ac.createGain();
+ o.type='sine';o.frequency.setValueAtTime(225,T);o.frequency.exponentialRampToValueAtTime(88,T+.065);o.frequency.exponentialRampToValueAtTime(67,T+.14);
+ env(v,T,.42*power,.18);o.connect(v);v.connect(fx);o.start(T);o.stop(T+.20);
+ if(grade==='PERFECT')osc(t+.038,180,.06,.075,'triangle',fx,1700);
+}
 function silence(){if(music&&ac)music.gain.setTargetAtTime(0,ac.currentTime,.012)}
 function restore(){if(music&&ac)music.gain.setTargetAtTime(bgmOn?.43:0,ac.currentTime,.035)}
 function schedule(t){if(!ac||ac.state!=='running')return;let limit=t+118,k=0;while(timeOf(nextAudioHalf/2)<limit&&k++<16){let tm=timeOf(nextAudioHalf/2);if(tm>=t-48)beatMusic(tm,nextAudioHalf);nextAudioHalf++}k=0;while(nextCue<cues.length&&timeOf(cues[nextCue].beat)<limit&&k++<20){let c=cues[nextCue++],tm=timeOf(c.beat);if(tm>=t-48)cueFx(tm,c.kind==='double'?(c.beat%4===0?0:1):0)}}
@@ -103,14 +115,24 @@ for(const e of notes){if(e.status!==0)continue;let remain=timeOf(e.beat)-t,lead=
 if(e.fast){g.strokeStyle='#ffbb4b';g.lineWidth=3;g.shadowColor='#f4a640';g.shadowBlur=15;g.beginPath();g.moveTo(x+sz*.6,y-20);g.lineTo(x+sz*1.18,y);g.lineTo(x+sz*.6,y+20);g.stroke();g.shadowBlur=0;g.strokeStyle='#9fe98d99';for(let j=0;j<3;j++){g.beginPath();g.moveTo(x+sz*.6+j*12,y-11+j*10);g.lineTo(x+sz*1.4+j*12,y-11+j*10);g.stroke()}}
 if(atlas.complete&&atlas.naturalWidth){g.drawImage(atlas,(e.id%5)*56,Math.floor(e.id/5)*56,56,56,x-sz/2,y-sz/2,sz,sz)}else{g.textAlign='center';g.font='32px system-ui';g.fillText(e.fast?'🐕':'🦠',x,y+12)}}
 g.textAlign='center';g.font='24px system-ui';for(let i=0;i<3;i++){g.fillText('🛡️',lineX,(i+.5)*lh+33)}
-let warn=cues.some(c=>t>=timeOf(c.beat)-135&&t<timeOf(c.beat)+330);if(warn){g.fillStyle='#ffdb71';g.font='bold 30px system-ui';g.fillText('⚠️',w*.82,42)}
+// Keep each warning on its actual attack lane until that specific fast note lands.
+const activeCues=cues.filter(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat)+110);
+for(const c of activeCues){
+ const y=(c.lane+.5)*lh, bx=Math.min(w-80,w*.76), duration=Math.max(150,timeOf(c.targetBeat)-timeOf(c.beat));
+ const pulse=.72+.28*Math.sin((t-timeOf(c.beat))/85);
+ g.save();g.globalAlpha=pulse;g.fillStyle='#4b310de0';g.strokeStyle='#ffcf69';g.lineWidth=2;
+ g.beginPath();g.roundRect(bx,y-21,68,42,10);g.fill();g.stroke();
+ g.fillStyle='#fff0c1';g.font='bold 22px system-ui';g.textAlign='center';g.fillText('⚠️'+(c.kind==='double'?String(c.order):'!'),bx+34,y+8);
+ g.restore();
+}
+
 let b=curBeat;if(b>=0){const x=lineX;g.fillStyle='#53f8dc44';g.fillRect(x-6,0,12,h)}
 }
-function frame(t){if(mode==='play'){ensure(t);schedule(t);checkMiss(t);while(timeOf(curBeat+1)<=t&&curBeat<30000)curBeat++;dots.forEach((el,i)=>el.classList.toggle('active',curBeat>=0&&i===curBeat%4));let impending=notes.find(e=>e.status===0&&e.fast&&timeOf(e.beat)-t>0&&timeOf(e.beat)-t<1400);$('#warning').textContent=impending?'⚠️ 高速接近！':'正しいレーンでタップ！';hud(t)}render(t);if(t>showTextUntil)$('#judgement').textContent='';requestAnimationFrame(frame)}
+function frame(t){if(mode==='play'){ensure(t);schedule(t);checkMiss(t);while(timeOf(curBeat+1)<=t&&curBeat<30000)curBeat++;dots.forEach((el,i)=>el.classList.toggle('active',curBeat>=0&&i===curBeat%4));let approaching=cues.some(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat));$('#warning').textContent=approaching?'⚠️ 警告レーンに高速接近！':'レーンを直接タップ！';hud(t)}render(t);if(t>showTextUntil)$('#judgement').textContent='';requestAnimationFrame(frame)}
 function bindPad(button){const lane=Number(button.dataset.lane);button.addEventListener('pointerdown',e=>{e.preventDefault();button.classList.add('pressed');attack(lane)});button.addEventListener('pointerup',()=>button.classList.remove('pressed'));button.addEventListener('pointercancel',()=>button.classList.remove('pressed'))}
-$$('.pad').forEach(bindPad);
+// The canvas is the only gameplay input on phones; no lower lane buttons.
 C.addEventListener('pointerdown',e=>{e.preventDefault();const box=C.getBoundingClientRect(),lane=Math.max(0,Math.min(2,Math.floor(3*(e.clientY-box.top)/box.height)));attack(lane)});
-document.addEventListener('keydown',e=>{if(e.repeat)return;const map={'1':0,'2':1,'3':2,'ArrowUp':0,'ArrowDown':2};if(Object.hasOwn(map,e.key)){e.preventDefault();attack(map[e.key])}if(e.code==='Space'){e.preventDefault();attack(1)}});
+document.addEventListener('keydown',e=>{if(e.repeat)return;const map={'1':0,'2':1,'3':2,'ArrowUp':0,'ArrowDown':2};if(Object.prototype.hasOwnProperty.call(map,e.key)){e.preventDefault();attack(map[e.key])}if(e.code==='Space'){e.preventDefault();attack(1)}});
 $('#start').addEventListener('click',()=>mode==='pause'?resume():start());$('#pause').addEventListener('click',()=>mode==='play'?pause():mode==='pause'?resume():null);
 $('#bgm').addEventListener('click',()=>{bgmOn=!bgmOn;$('#bgm').textContent='🎵 BGM '+(bgmOn?'ON':'OFF');if(mode==='play')restore()});
 $('#sfx').addEventListener('click',()=>{sfxOn=!sfxOn;$('#sfx').textContent='🔔 SE '+(sfxOn?'ON':'OFF');if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.55:0,ac.currentTime,.02)});
