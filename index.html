@@ -96,16 +96,23 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
  header,.stats,.beatbar,.foot,.note{flex:none}
  .arena{height:auto;min-height:0;max-height:none;flex:1 1 auto}
 }
+
+/* v1.5: audio-timeline calibration controls */
+.syncbox{display:flex;align-items:center;gap:3px;white-space:nowrap}
+.syncbox button{background:#1c3e52;border:1px solid #547b8c;color:#e5f8ff;border-radius:7px;padding:6px 10px;font-size:14px;min-width:31px}
+#syncLabel{font-size:10px;color:#b3eae5;min-width:63px;text-align:center;white-space:nowrap}
+@media (orientation:landscape) and (max-height:700px){.syncbox button{padding:4px 10px}}
+@media (orientation:portrait) and (max-width:700px){.syncbox button{padding:3px 8px;font-size:13px}#syncLabel{font-size:9px}}
 </style></head>
 <body><div id="game">
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.4</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.5</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
 <div class="arena" id="arena"><canvas id="canvas"></canvas><div class="hint"><span>🛡️ 5-LANE DEFENSE</span><span id="warning">拍に合わせて防御！</span></div><div id="judgement"></div>
 <div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">5レーン防衛、開始！ ↻ 横持ち推奨</h2><p id="desc">📱 横向きで持って5本のレーンを直接タップ。<br>正しいレーンのロゴを拍に合わせて撃退！<br>⚠️①と⚠️②はそれぞれの着弾レーンを予告。</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><button id="share" class="share" hidden>𝕏 スコアを共有</button></div></div></div>
 
-<div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>5レーンを直接タップ・横持ち推奨</span><button id="pause">一時停止</button></div>
+<div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>5レーンを直接タップ・横持ち推奨</span><button id="pause">一時停止</button><div class="syncbox"><button id="syncMinus" aria-label="判定を早める">−</button><span id="syncLabel">同期 0ms</span><button id="syncPlus" aria-label="判定を遅らせる">＋</button></div></div>
 <div class="note" id="music-note">高速：シロイヌタケル便 ｜ BGM：内蔵テクノ（My Song 3音源待ち）</div>
 </div><script>
 (function(){
@@ -118,7 +125,7 @@ let mode='ready',score=0,combo=0,maxCombo=0,leaks=0,hits=0,best=0,perfect=0,curB
 try{best=Number(localStorage.getItem('morasu-v09-best'))||0}catch(e){}
 function bpmAt(b){return usingGarageBand?128:Math.min(176,128+Math.floor(Math.max(0,b)/32)*6)}
 const bt=[0];function timeOf(b){const i=Math.floor(Math.max(0,b));while(bt.length<=i+1){let p=bt.length-1;bt.push(bt[p]+60000/bpmAt(p))}return startAt+bt[i]+(b-i)*(bt[i+1]-bt[i])}
-function show(t){$('#judgement').textContent=t;showTextUntil=performance.now()+370}
+function show(t){$('#judgement').textContent=t;showTextUntil=gameClockNow()+370}
 function hud(t){$('#score').textContent=score.toLocaleString('ja-JP');$('#combo').textContent=combo;$('#best').textContent=best.toLocaleString('ja-JP');$('#leaks').textContent=leaks+'/3';$('#bpm').textContent=bpmAt(curBeat);let s=Math.floor(Math.max(0,(t-startAt)/1000));$('#clock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 function pickLane(){let x=Math.floor(Math.random()*5);if(Math.random()<.72&&x===previousLane)x=(x+1+Math.floor(Math.random()*4))%5;previousLane=x;return x}
 function add(b,fast=false,forcedLane=null){if(b-previousBeat<.7)return null;const lane=forcedLane===null?pickLane():forcedLane;previousLane=lane;const note={beat:b,lane,id:fast?6:normalIds[Math.floor(Math.random()*normalIds.length)],fast,status:0};notes.push(note);previousBeat=b;return note}
@@ -139,11 +146,11 @@ async function start(){
  usingGarageBand=!!clipBuffer;
  $('#music-note').textContent=usingGarageBand?'高速：シロイヌタケル便 ｜ BGM：My Song 3（128 BPM）':'高速：シロイヌタケル便 ｜ BGM：内蔵テクノ（My Song 3音源待ち）';
  $('#start').disabled=false;$('#start').textContent='▶ ゲームスタート';
- mode='play';score=combo=maxCombo=leaks=hits=perfect=0;counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;startAt=performance.now()+950;flashLanes=Array(5).fill(0);$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt);if(usingGarageBand)playClip(startAt,0)}
+ mode='play';score=combo=maxCombo=leaks=hits=perfect=0;counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;audioAnchorContext=null;audioAnchorOffsetSeconds=0;pausedSongElapsed=0;startAt=performance.now()+950;flashLanes=Array(5).fill(0);$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt);if(usingGarageBand)playClip(startAt,0)}
 function finish(){if(mode!=='play')return;mode='over';stopClip();save();$('#title').textContent='🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#share').hidden=false;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;silence()}
-function pause(){if(mode!=='play')return;pausedAt=performance.now();mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#share').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
-function resume(){if(mode!=='pause')return;unlock();const elapsed=Math.max(0,(pausedAt-startAt)/1000);startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore();if(usingGarageBand)playClip(performance.now(),elapsed)}
-function attack(lane){if(mode!=='play')return;const now=performance.now();flashLanes[lane]=now+160;let found=null,distance=126;for(const e of notes){if(e.status!==0||e.lane!==lane)continue;const d=Math.abs(timeOf(e.beat)-now);if(d<distance){found=e;distance=d}}if(!found){let wrong=notes.some(e=>e.status===0&&Math.abs(timeOf(e.beat)-now)<140&&e.lane!==lane);combo=0;show(wrong?'WRONG LANE':'TOO EARLY');$('#judgement').style.color='#ff9ab4';hitFx(false);hud(now);return}
+function pause(){if(mode!=='play')return;pausedAt=performance.now();pausedSongElapsed=(usingGarageBand&&ac&&audioAnchorContext!==null)?Math.max(0,ac.currentTime-audioAnchorContext+audioAnchorOffsetSeconds):Math.max(0,(pausedAt-startAt)/1000);mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#share').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
+function resume(){if(mode!=='pause')return;unlock();const elapsed=pausedSongElapsed;startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore();if(usingGarageBand)playClip(performance.now(),elapsed)}
+function attack(lane){if(mode!=='play')return;const now=gameClockNow();flashLanes[lane]=now+160;let found=null,distance=126;for(const e of notes){if(e.status!==0||e.lane!==lane)continue;const d=Math.abs(timeOf(e.beat)-now);if(d<distance){found=e;distance=d}}if(!found){let wrong=notes.some(e=>e.status===0&&Math.abs(timeOf(e.beat)-now)<140&&e.lane!==lane);combo=0;show(wrong?'WRONG LANE':'TOO EARLY');$('#judgement').style.color='#ff9ab4';hitFx(false);hud(now);return}
 found.status=1;hits++;counts[found.id]++;combo++;maxCombo=Math.max(combo,maxCombo);let grade=distance<=43?'PERFECT':distance<=88?'GREAT':'GOOD';if(grade==='PERFECT')perfect++;let points=(grade==='PERFECT'?250:grade==='GREAT'?150:80)*(found.fast?2:1)+Math.min(120,combo*3);score+=points;save();show(grade+' +'+points);$('#judgement').style.color=grade==='PERFECT'?'#ffe98c':'#7cf9e7';hitFx(true,grade,found.fast);hud(now)}
 function checkMiss(t){for(const e of notes){if(e.status===0&&t>timeOf(e.beat)+139){e.status=2;leaks++;combo=0;$('#judgement').style.color='#ff8d9f';show('🔓 MISS!');hitFx(false);if(leaks>=3){finish();break}}}}
 
@@ -191,6 +198,17 @@ function makeDrumSamples(){
 }
 
 let clipData=null,clipBuffer=null,clipSource=null,usingGarageBand=false,clipLoad=null;
+// My Song 3 starts its kick about 80ms after the file begins.
+const FILE_BEAT_PHASE_MS=80;
+let audioAnchorContext=null,audioAnchorOffsetSeconds=0,pausedSongElapsed=0,userCalibrationMs=0;
+try{userCalibrationMs=Math.max(-200,Math.min(200,Number(localStorage.getItem('morasu-calibration-ms'))||0))}catch(e){}
+function gameClockNow(){
+ if(usingGarageBand&&ac&&ac.state==='running'&&audioAnchorContext!==null){
+  return startAt+((ac.currentTime-audioAnchorContext+audioAnchorOffsetSeconds)*1000)-FILE_BEAT_PHASE_MS-userCalibrationMs;
+ }
+ return performance.now();
+}
+function refreshSyncLabel(){$('#syncLabel').textContent='同期 '+(userCalibrationMs>0?'+':'')+userCalibrationMs+'ms'}
 try{
  clipLoad=fetch('./bgm.mp3?v=13').then(r=>r.ok?r.arrayBuffer():null).then(data=>{clipData=data}).catch(()=>{clipData=null});
 }catch(e){}
@@ -198,7 +216,7 @@ function stopClip(){
  if(!clipSource)return;
  try{clipSource.stop()}catch(e){}
  try{clipSource.disconnect()}catch(e){}
- clipSource=null;
+ clipSource=null;audioAnchorContext=null;
 }
 function playClip(when,offset){
  if(!clipBuffer||!ac||ac.state!=='running')return;
@@ -207,7 +225,7 @@ function playClip(when,offset){
  s.loop=true;s.loopStart=0;s.loopEnd=clipBuffer.duration;
  s.connect(music);
  const loopLength=clipBuffer.duration;let pos=((offset%loopLength)+loopLength)%loopLength;
- try{s.start(at(when),pos);clipSource=s}catch(e){console.warn('Track playback error',e)}
+ try{const scheduled=at(when);s.start(scheduled,pos);clipSource=s;audioAnchorContext=scheduled;audioAnchorOffsetSeconds=offset}catch(e){console.warn('Track playback error',e)}
 }
 
 function unlock(){
@@ -302,7 +320,7 @@ function hitFx(ok,grade='MISS',fast=false){
 }
 function silence(){if(music&&ac)music.gain.setTargetAtTime(0,ac.currentTime,.012)}
 function restore(){if(music&&ac)music.gain.setTargetAtTime(bgmOn?.62:0,ac.currentTime,.035)}
-function schedule(t){if(!ac||ac.state!=='running')return;let limit=t+118,k=0;while(timeOf(nextAudioHalf/2)<limit&&k++<16){let tm=timeOf(nextAudioHalf/2);if(tm>=t-48)beatMusic(tm,nextAudioHalf);nextAudioHalf++}k=0;while(nextCue<cues.length&&timeOf(cues[nextCue].beat)<limit&&k++<20){let c=cues[nextCue++],tm=timeOf(c.beat);if(tm>=t-48)cueFx(tm,c.kind==='double'?(c.beat%4===0?0:1):0)}}
+function schedule(t){if(!ac||ac.state!=='running')return;let limit=t+118,k=0;while(timeOf(nextAudioHalf/2)<limit&&k++<16){let tm=timeOf(nextAudioHalf/2);if(tm>=t-48)beatMusic(tm,nextAudioHalf);nextAudioHalf++}k=0;while(nextCue<cues.length&&timeOf(cues[nextCue].beat)<limit&&k++<20){let c=cues[nextCue++],tm=timeOf(c.beat);if(tm>=t-48)cueFx(performance.now()+(tm-t),c.kind==='double'?(c.beat%4===0?0:1):0)}}
 function render(t){const w=arena.clientWidth,h=arena.clientHeight,dpr=Math.min(2,devicePixelRatio||1);if(C.width!==Math.round(w*dpr)||C.height!==Math.round(h*dpr)){C.width=Math.round(w*dpr);C.height=Math.round(h*dpr)}g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);let bg=g.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#103755');bg.addColorStop(1,'#071527');g.fillStyle=bg;g.fillRect(0,0,w,h);
 let lineX=w*.15,landX=w*.93,lh=h/5;
 for(let i=0;i<5;i++){let y=lh*i;if(t<flashLanes[i]){g.fillStyle='#1bc4b533';g.fillRect(0,y,w,lh)}g.fillStyle=i%2===0?'#15334d55':'#0c223a88';g.fillRect(0,y,w,lh);g.strokeStyle='#4a799a88';g.lineWidth=1;g.beginPath();g.moveTo(0,y+lh);g.lineTo(w,y+lh);g.stroke();g.fillStyle='#96c2d9';g.font='bold 11px system-ui';g.textAlign='left';g.fillText(['01 TOP','02 UPPER','03 MID','04 LOWER','05 LOW'][i],8,y+18);
@@ -326,7 +344,7 @@ for(const c of activeCues){
 
 let b=curBeat;if(b>=0){const x=lineX;g.fillStyle='#53f8dc44';g.fillRect(x-6,0,12,h)}
 }
-function frame(t){if(mode==='play'){ensure(t);schedule(t);checkMiss(t);while(timeOf(curBeat+1)<=t&&curBeat<30000)curBeat++;dots.forEach((el,i)=>el.classList.toggle('active',curBeat>=0&&i===curBeat%4));let approaching=cues.some(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat));$('#warning').textContent=approaching?'⚠️ 警告レーンに高速接近！':'レーンを直接タップ！';hud(t)}render(t);if(t>showTextUntil)$('#judgement').textContent='';requestAnimationFrame(frame)}
+function frame(t){if(mode==='play')t=gameClockNow();if(mode==='play'){ensure(t);schedule(t);checkMiss(t);while(timeOf(curBeat+1)<=t&&curBeat<30000)curBeat++;dots.forEach((el,i)=>el.classList.toggle('active',curBeat>=0&&i===curBeat%4));let approaching=cues.some(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat));$('#warning').textContent=approaching?'⚠️ 警告レーンに高速接近！':'レーンを直接タップ！';hud(t)}render(t);if(t>showTextUntil)$('#judgement').textContent='';requestAnimationFrame(frame)}
 function bindPad(button){const lane=Number(button.dataset.lane);button.addEventListener('pointerdown',e=>{e.preventDefault();button.classList.add('pressed');attack(lane)});button.addEventListener('pointerup',()=>button.classList.remove('pressed'));button.addEventListener('pointercancel',()=>button.classList.remove('pressed'))}
 // The canvas is the only gameplay input on phones; no lower lane buttons.
 function laneFromPointer(e,rect,rotated){
@@ -344,6 +362,9 @@ document.addEventListener('keydown',e=>{if(e.repeat)return;const map={'1':0,'2':
 $('#start').addEventListener('click',()=>mode==='pause'?resume():start());$('#pause').addEventListener('click',()=>mode==='play'?pause():mode==='pause'?resume():null);
 $('#bgm').addEventListener('click',()=>{bgmOn=!bgmOn;$('#bgm').textContent='🎵 BGM '+(bgmOn?'ON':'OFF');if(mode==='play')restore()});
 $('#sfx').addEventListener('click',()=>{sfxOn=!sfxOn;$('#sfx').textContent='🔔 SE '+(sfxOn?'ON':'OFF');if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.02)});
+$('#syncMinus').addEventListener('click',()=>setCalibration(-20));$('#syncPlus').addEventListener('click',()=>setCalibration(20));
+function setCalibration(d){userCalibrationMs=Math.max(-200,Math.min(200,userCalibrationMs+d));try{localStorage.setItem('morasu-calibration-ms',userCalibrationMs)}catch(e){}refreshSyncLabel()}
+refreshSyncLabel();
 $('#share').addEventListener('click',()=>{let top=counts.map((n,i)=>({n,i})).sort((a,b)=>b.n-a.n).slice(0,3).map(x=>NAMES[x.i]+' ×'+x.n).join(' / '),s='🛡️ 漏らすな！個人情報！ '+score.toLocaleString('ja-JP')+'点！\\n'+top+'\\nhttps://sectorlab-jp.github.io/morasu-na/\\n#漏らすな個人情報';window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(s),'_blank','noopener,noreferrer')});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='play')pause()});
 hud(startAt);requestAnimationFrame(frame);
