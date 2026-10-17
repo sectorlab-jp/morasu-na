@@ -43,14 +43,67 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .arena{height:clamp(330px,57dvh,570px)}
 @media(orientation:portrait) and (max-width:700px){.landscape-nudge{display:flex}.arena{height:clamp(345px,49dvh,520px)}.hint{font-size:10px}.hint span{padding:3px 5px}}
 @media(orientation:landscape){#game{padding:5px 12px 7px;max-width:1100px;min-height:100dvh}header{min-height:32px}h1{font-size:20px;margin:1px 0 3px}.kicker{font-size:8px}.switches{flex-direction:row}.switches button{padding:3px 7px;font-size:10px}.stats{margin-bottom:4px;gap:5px}.stat{padding:3px}.stat small{font-size:9px}.stat strong{font-size:15px;margin-top:0}.beatbar{margin-bottom:4px;padding:4px 10px}.beatdots b{width:20px;height:20px;font-size:10px}.arena{height:max(195px,calc(100dvh - 174px));max-height:600px}.foot{margin-top:5px;font-size:10px}.foot br{display:none}#pause{padding:5px 12px}.note{font-size:9px;margin-top:3px}.cover{padding:5px}.panel{gap:5px}.panel h2{font-size:19px}.panel p{font-size:11px}.panel>div:first-child{font-size:25px!important}.main{padding:9px 20px}.result{max-height:110px;grid-template-columns:repeat(5,minmax(0,1fr));font-size:9px}}
+
+/* v1.4: portrait webviews often refuse device rotation.
+   Rotate the entire landscape layout clockwise in CSS. */
+@media (orientation: portrait) and (max-width:700px){
+ html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+ #game{
+   position:fixed;top:0;left:100dvw;
+   width:100dvh;height:100dvw;min-height:0;max-width:none;
+   margin:0;padding:4px 10px 5px;
+   transform-origin:top left;transform:rotate(90deg);
+   overflow:hidden;display:flex;flex-direction:column;
+   border:0;
+ }
+ .landscape-nudge{display:none}
+ header{min-height:29px;flex:none}
+ h1{font-size:19px;margin:0 0 2px;line-height:1.12}
+ .kicker{font-size:8px;letter-spacing:1.2px}
+ .switches{flex-direction:row;gap:4px;align-items:center}
+ .switches button{font-size:10px;padding:4px 8px}
+ .stats{flex:none;gap:5px;margin-bottom:4px}
+ .stat{padding:3px 2px}
+ .stat small{font-size:9px}
+ .stat strong{font-size:15px;margin-top:0}
+ .beatbar{flex:none;padding:3px 9px;margin-bottom:4px;font-size:10px}
+ .beatdots b{width:20px;height:20px;font-size:10px}
+ .arena{flex:1 1 auto;min-height:0;max-height:none;height:auto;border-radius:9px}
+ .hint{font-size:10px}
+ .hint span{padding:3px 5px}
+ #judgement{font-size:20px}
+ .foot{flex:none;margin-top:5px;font-size:10px;line-height:1.3}
+ .foot br{display:none}
+ #pause{padding:5px 9px;font-size:11px}
+ .note{flex:none;margin-top:3px;font-size:9px}
+ .cover{padding:5px}
+ .panel{gap:5px}
+ .panel>div:first-child{font-size:23px!important}
+ .panel h2{font-size:19px}
+ .panel p{font-size:10px;line-height:1.35}
+ .main{font-size:15px;padding:9px 18px}
+ .share{font-size:10px;padding:5px 12px}
+ .result{max-height:100px;grid-template-columns:repeat(5,minmax(0,1fr));font-size:9px}
+ .result div{padding:3px;line-height:1.3}
+}
+@media (orientation: landscape) and (max-height:700px){
+ html,body{overflow:hidden;overscroll-behavior:none}
+ #game{
+   height:100dvh;min-height:0;max-width:1100px;
+   overflow:hidden;display:flex;flex-direction:column;
+   padding:4px 12px 5px
+ }
+ header,.stats,.beatbar,.foot,.note{flex:none}
+ .arena{height:auto;min-height:0;max-height:none;flex:1 1 auto}
+}
 </style></head>
 <body><div id="game">
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.3</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.4</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
 <div class="arena" id="arena"><canvas id="canvas"></canvas><div class="hint"><span>🛡️ 5-LANE DEFENSE</span><span id="warning">拍に合わせて防御！</span></div><div id="judgement"></div>
-<div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">5レーン防衛、開始！</h2><p id="desc">📱 横持ち推奨！5本のレーンを直接タップ。<br>正しいレーンのロゴを拍に合わせて撃退！<br>⚠️①と⚠️②はそれぞれの着弾レーンを予告。</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><button id="share" class="share" hidden>𝕏 スコアを共有</button></div></div></div>
+<div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">5レーン防衛、開始！ ↻ 横持ち推奨</h2><p id="desc">📱 横向きで持って5本のレーンを直接タップ。<br>正しいレーンのロゴを拍に合わせて撃退！<br>⚠️①と⚠️②はそれぞれの着弾レーンを予告。</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><button id="share" class="share" hidden>𝕏 スコアを共有</button></div></div></div>
 
 <div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>5レーンを直接タップ・横持ち推奨</span><button id="pause">一時停止</button></div>
 <div class="note" id="music-note">高速：シロイヌタケル便 ｜ BGM：内蔵テクノ（My Song 3音源待ち）</div>
@@ -276,7 +329,17 @@ let b=curBeat;if(b>=0){const x=lineX;g.fillStyle='#53f8dc44';g.fillRect(x-6,0,12
 function frame(t){if(mode==='play'){ensure(t);schedule(t);checkMiss(t);while(timeOf(curBeat+1)<=t&&curBeat<30000)curBeat++;dots.forEach((el,i)=>el.classList.toggle('active',curBeat>=0&&i===curBeat%4));let approaching=cues.some(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat));$('#warning').textContent=approaching?'⚠️ 警告レーンに高速接近！':'レーンを直接タップ！';hud(t)}render(t);if(t>showTextUntil)$('#judgement').textContent='';requestAnimationFrame(frame)}
 function bindPad(button){const lane=Number(button.dataset.lane);button.addEventListener('pointerdown',e=>{e.preventDefault();button.classList.add('pressed');attack(lane)});button.addEventListener('pointerup',()=>button.classList.remove('pressed'));button.addEventListener('pointercancel',()=>button.classList.remove('pressed'))}
 // The canvas is the only gameplay input on phones; no lower lane buttons.
-C.addEventListener('pointerdown',e=>{e.preventDefault();const box=C.getBoundingClientRect(),lane=Math.max(0,Math.min(4,Math.floor(5*(e.clientY-box.top)/box.height)));attack(lane)});
+function laneFromPointer(e,rect,rotated){
+ // CSS-rotated portrait: logical lane Y maps right-to-left across screen X.
+ const relative=rotated?(rect.right-e.clientX)/rect.width:(e.clientY-rect.top)/rect.height;
+ return Math.max(0,Math.min(4,Math.floor(5*relative)));
+}
+C.addEventListener('pointerdown',e=>{
+ e.preventDefault();
+ const rect=C.getBoundingClientRect();
+ const rotated=!!(window.matchMedia&&window.matchMedia('(orientation: portrait) and (max-width:700px)').matches);
+ attack(laneFromPointer(e,rect,rotated));
+});
 document.addEventListener('keydown',e=>{if(e.repeat)return;const map={'1':0,'2':1,'3':2,'4':3,'5':4,'ArrowUp':0,'ArrowDown':4};if(Object.prototype.hasOwnProperty.call(map,e.key)){e.preventDefault();attack(map[e.key])}if(e.code==='Space'){e.preventDefault();attack(1)}});
 $('#start').addEventListener('click',()=>mode==='pause'?resume():start());$('#pause').addEventListener('click',()=>mode==='play'?pause():mode==='pause'?resume():null);
 $('#bgm').addEventListener('click',()=>{bgmOn=!bgmOn;$('#bgm').textContent='🎵 BGM '+(bgmOn?'ON':'OFF');if(mode==='play')restore()});
