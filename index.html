@@ -105,14 +105,14 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 @media (orientation:portrait) and (max-width:700px){.syncbox button{padding:3px 8px;font-size:13px}#syncLabel{font-size:9px}}
 </style></head>
 <body><div id="game">
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.5</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.6</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
 <div class="arena" id="arena"><canvas id="canvas"></canvas><div class="hint"><span>🛡️ 5-LANE DEFENSE</span><span id="warning">拍に合わせて防御！</span></div><div id="judgement"></div>
-<div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">5レーン防衛、開始！ ↻ 横持ち推奨</h2><p id="desc">📱 横向きで持って5本のレーンを直接タップ。<br>正しいレーンのロゴを拍に合わせて撃退！<br>⚠️①と⚠️②はそれぞれの着弾レーンを予告。</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><button id="share" class="share" hidden>𝕏 スコアを共有</button></div></div></div>
+<div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">5レーン防衛、開始！ ↻ 横持ち推奨</h2><p id="desc">📱 横向きで持って5列を直接タップ。<br>上から落ちるロゴを下の判定ラインで撃退！<br>⚠️①と⚠️②はそれぞれの着弾レーンを予告。</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><button id="share" class="share" hidden>𝕏 スコアを共有</button></div></div></div>
 
-<div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>5レーンを直接タップ・横持ち推奨</span><button id="pause">一時停止</button><div class="syncbox"><button id="syncMinus" aria-label="判定を早める">−</button><span id="syncLabel">同期 0ms</span><button id="syncPlus" aria-label="判定を遅らせる">＋</button></div></div>
+<div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>上から落下！5列の判定ラインで直接タップ</span><button id="pause">一時停止</button><div class="syncbox"><button id="syncMinus" aria-label="判定を早める">−</button><span id="syncLabel">同期 0ms</span><button id="syncPlus" aria-label="判定を遅らせる">＋</button></div></div>
 <div class="note" id="music-note">高速：シロイヌタケル便 ｜ BGM：内蔵テクノ（My Song 3音源待ち）</div>
 </div><script>
 (function(){
@@ -326,35 +326,95 @@ function hitFx(ok,grade='MISS',fast=false){
 function silence(){if(music&&ac)music.gain.setTargetAtTime(0,ac.currentTime,.012)}
 function restore(){if(music&&ac)music.gain.setTargetAtTime(bgmOn?.62:0,ac.currentTime,.035)}
 function schedule(t){if(!ac||ac.state!=='running')return;let limit=t+118,k=0;while(timeOf(nextAudioHalf/2)<limit&&k++<16){let tm=timeOf(nextAudioHalf/2);if(tm>=t-48)beatMusic(tm,nextAudioHalf);nextAudioHalf++}k=0;while(nextCue<cues.length&&timeOf(cues[nextCue].beat)<limit&&k++<20){let c=cues[nextCue++],tm=timeOf(c.beat);if(tm>=t-48)cueFx(performance.now()+(tm-t),c.kind==='double'?(c.beat%4===0?0:1):0)}}
-function render(t){const w=arena.clientWidth,h=arena.clientHeight,dpr=Math.min(2,devicePixelRatio||1);if(C.width!==Math.round(w*dpr)||C.height!==Math.round(h*dpr)){C.width=Math.round(w*dpr);C.height=Math.round(h*dpr)}g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);let bg=g.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#103755');bg.addColorStop(1,'#071527');g.fillStyle=bg;g.fillRect(0,0,w,h);
-let lineX=w*.15,landX=w*.93,lh=h/5;
-for(let i=0;i<5;i++){let y=lh*i;if(t<flashLanes[i]){g.fillStyle='#1bc4b533';g.fillRect(0,y,w,lh)}g.fillStyle=i%2===0?'#15334d55':'#0c223a88';g.fillRect(0,y,w,lh);g.strokeStyle='#4a799a88';g.lineWidth=1;g.beginPath();g.moveTo(0,y+lh);g.lineTo(w,y+lh);g.stroke();g.fillStyle='#96c2d9';g.font='bold 11px system-ui';g.textAlign='left';g.fillText(['01 TOP','02 UPPER','03 MID','04 LOWER','05 LOW'][i],8,y+18);
-g.strokeStyle='#255a7b77';for(let s=1;s<=4;s++){let x=lineX+(landX-lineX)*s/5;g.beginPath();g.moveTo(x,y+25);g.lineTo(x,y+lh-9);g.stroke()}}
-g.strokeStyle='#7efeea';g.shadowColor='#4fefee';g.shadowBlur=10;g.lineWidth=4;g.beginPath();g.moveTo(lineX,0);g.lineTo(lineX,h);g.stroke();g.shadowBlur=0;
-let leadN=1700,leadF=430;
-for(const e of notes){if(e.status!==0)continue;let remain=timeOf(e.beat)-t,lead=e.fast?leadF:leadN;if(remain>lead||remain<-140)continue;let p=Math.max(0,Math.min(1,1-remain/lead)),x=landX-(landX-lineX)*p,y=(e.lane+.5)*lh,sz=Math.min(lh*.72,e.fast?42:38);
-if(e.fast){g.strokeStyle='#ffbb4b';g.lineWidth=3;g.shadowColor='#f4a640';g.shadowBlur=15;g.beginPath();g.moveTo(x+sz*.6,y-20);g.lineTo(x+sz*1.18,y);g.lineTo(x+sz*.6,y+20);g.stroke();g.shadowBlur=0;g.strokeStyle='#9fe98d99';for(let j=0;j<3;j++){g.beginPath();g.moveTo(x+sz*.6+j*12,y-11+j*10);g.lineTo(x+sz*1.4+j*12,y-11+j*10);g.stroke()}}
-if(atlas.complete&&atlas.naturalWidth){g.drawImage(atlas,(e.id%5)*56,Math.floor(e.id/5)*56,56,56,x-sz/2,y-sz/2,sz,sz)}else{g.textAlign='center';g.font=Math.min(31,lh*.55)+'px system-ui';g.fillText(e.fast?'🐕':'🦠',x,y+10)}}
-g.textAlign='center';g.font=Math.min(22,lh*.35)+'px system-ui';for(let i=0;i<5;i++){g.fillText('🛡️',lineX,(i+.5)*lh+lh*.32)}
-// Keep each warning on its actual attack lane until that specific fast note lands.
-const activeCues=cues.filter(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat)+110);
-for(const c of activeCues){
- const y=(c.lane+.5)*lh, bx=Math.min(w-80,w*.76), duration=Math.max(150,timeOf(c.targetBeat)-timeOf(c.beat));
- const pulse=.72+.28*Math.sin((t-timeOf(c.beat))/85);
- g.save();g.globalAlpha=pulse;g.fillStyle='#4b310de0';g.strokeStyle='#ffcf69';g.lineWidth=2;
- g.beginPath();g.roundRect(bx,y-Math.min(21,lh*.35),68,Math.min(42,lh*.7),10);g.fill();g.stroke();
- g.fillStyle='#fff0c1';g.font='bold 22px system-ui';g.textAlign='center';g.fillText('⚠️'+(c.kind==='double'?String(c.order):'!'),bx+34,y+8);
- g.restore();
+function render(t){
+ const w=arena.clientWidth,h=arena.clientHeight,dpr=Math.min(2,devicePixelRatio||1);
+ if(C.width!==Math.round(w*dpr)||C.height!==Math.round(h*dpr)){
+  C.width=Math.round(w*dpr);C.height=Math.round(h*dpr);
+ }
+ g.setTransform(dpr,0,0,dpr,0,0);
+ g.clearRect(0,0,w,h);
+ const bg=g.createLinearGradient(0,0,0,h);
+ bg.addColorStop(0,'#0e314d');bg.addColorStop(1,'#071628');
+ g.fillStyle=bg;g.fillRect(0,0,w,h);
+ // Five vertical note highways. Notes fall from the top toward a bottom hit line.
+ const laneWidth=w/5,hitY=h*.80,spawnY=-26;
+ const labels=['01','02','03','04','05'];
+ for(let i=0;i<5;i++){
+  const left=laneWidth*i,cx=left+laneWidth*.5;
+  g.fillStyle=t<flashLanes[i]?'#14caa855':(i%2===0?'#1c436055':'#0b233e88');
+  g.fillRect(left,0,laneWidth,h);
+  if(i>0){
+   g.lineWidth=1;g.strokeStyle='#527d9a9b';g.beginPath();
+   g.moveTo(left,0);g.lineTo(left,h);g.stroke();
+  }
+  g.fillStyle='#abc9df';g.font='bold 12px system-ui';g.textAlign='center';
+  g.fillText(labels[i],cx,20);
+  // Guides make the downward motion and hit zone immediately legible.
+  g.strokeStyle='#325c7b55';g.lineWidth=1;
+  for(let j=1;j<=3;j++){
+   const gy=hitY*j/4;
+   g.beginPath();g.moveTo(left+laneWidth*.13,gy);g.lineTo(left+laneWidth*.87,gy);g.stroke();
+  }
+ }
+ // Wide bright bar across the BOTTOM of the note highway.
+ g.save();g.lineWidth=5;g.shadowColor='#37f5df';g.shadowBlur=14;
+ g.strokeStyle='#60f8e0';g.beginPath();g.moveTo(0,hitY);g.lineTo(w,hitY);g.stroke();g.restore();
+ g.fillStyle='#4ef5d422';g.fillRect(0,hitY-7,w,14);
+ const leadNormal=1700,leadFast=430;
+ for(const e of notes){
+  if(e.status!==0)continue;
+  const remaining=timeOf(e.beat)-t,lead=e.fast?leadFast:leadNormal;
+  if(remaining>lead||remaining<-140)continue;
+  const progress=Math.max(0,Math.min(1,1-remaining/lead));
+  const x=(e.lane+.5)*laneWidth;
+  const y=spawnY+(hitY-spawnY)*progress;
+  const size=Math.min(48,laneWidth*.48,Math.max(28,h*.19));
+  if(e.fast){
+   g.save();g.strokeStyle='#ffc46a';g.lineWidth=2.5;
+   g.shadowColor='#f4a642';g.shadowBlur=12;
+   // Downward speed streaks trail ABOVE the fast virus.
+   for(let k=-1;k<=1;k++){
+    const xx=x+k*size*.34;
+    g.beginPath();g.moveTo(xx,y-size*.65);
+    g.lineTo(xx,y-size*(1.25+(.16*(k+1))));g.stroke();
+   }
+   g.restore();
+  }
+  if(atlas.complete&&atlas.naturalWidth){
+   g.drawImage(atlas,(e.id%5)*56,Math.floor(e.id/5)*56,56,56,x-size/2,y-size/2,size,size);
+  }else{
+   g.textAlign='center';g.font=Math.min(35,size*.85)+'px system-ui';
+   g.fillText(e.fast?'🐕':'🦠',x,y+size*.32);
+  }
+ }
+ // A shield in every lane just BELOW the hit bar.
+ g.textAlign='center';g.font=Math.min(27,Math.max(17,h*.10))+'px system-ui';
+ for(let i=0;i<5;i++)g.fillText('🛡️',(i+.5)*laneWidth,Math.min(h-5,hitY+Math.max(20,h*.12)));
+ // Warning 1 and 2 are fixed to the exact columns their fast notes will hit.
+ const activeCues=cues.filter(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat)+110);
+ for(const c of activeCues){
+  const x=(c.lane+.5)*laneWidth,bw=Math.min(78,laneWidth*.83),bh=Math.min(38,h*.24),cy=Math.min(hitY*.35,Math.max(31,h*.20));
+  const pulse=.78+.22*Math.sin((t-timeOf(c.beat))/85);
+  g.save();g.globalAlpha=pulse;g.fillStyle='#513311e9';g.strokeStyle='#ffcf69';
+  g.shadowColor='#ffa727';g.shadowBlur=9;g.lineWidth=2;g.beginPath();
+  g.roundRect(x-bw/2,cy-bh/2,bw,bh,8);g.fill();g.stroke();
+  g.shadowBlur=0;g.fillStyle='#fff0c1';
+  g.font='bold '+Math.min(20,bh*.58)+'px system-ui';g.textAlign='center';
+  g.fillText('⚠️'+(c.kind==='double'?String(c.order):'!'),x,cy+Math.min(7,bh*.23));
+  g.restore();
+ }
+ if(curBeat>=0){
+  g.fillStyle='#5afde83b';g.fillRect(0,hitY-4,w,8);
+ }
 }
-
-let b=curBeat;if(b>=0){const x=lineX;g.fillStyle='#53f8dc44';g.fillRect(x-6,0,12,h)}
-}
-function frame(t){if(mode==='play')t=gameClockNow();if(mode==='play'){ensure(t);schedule(t);checkMiss(t);while(timeOf(curBeat+1)<=t&&curBeat<30000)curBeat++;dots.forEach((el,i)=>el.classList.toggle('active',curBeat>=0&&i===curBeat%4));let approaching=cues.some(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat));$('#warning').textContent=approaching?'⚠️ 警告レーンに高速接近！':'レーンを直接タップ！';hud(t)}render(t);if(t>showTextUntil)$('#judgement').textContent='';requestAnimationFrame(frame)}
+function frame(t){if(mode==='play')t=gameClockNow();if(mode==='play'){ensure(t);schedule(t);checkMiss(t);while(timeOf(curBeat+1)<=t&&curBeat<30000)curBeat++;dots.forEach((el,i)=>el.classList.toggle('active',curBeat>=0&&i===curBeat%4));let approaching=cues.some(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat));$('#warning').textContent=approaching?'⚠️ 警告レーンに高速接近！':'上から落下！判定ラインでタップ！';hud(t)}render(t);if(t>showTextUntil)$('#judgement').textContent='';requestAnimationFrame(frame)}
 function bindPad(button){const lane=Number(button.dataset.lane);button.addEventListener('pointerdown',e=>{e.preventDefault();button.classList.add('pressed');attack(lane)});button.addEventListener('pointerup',()=>button.classList.remove('pressed'));button.addEventListener('pointercancel',()=>button.classList.remove('pressed'))}
 // The canvas is the only gameplay input on phones; no lower lane buttons.
 function laneFromPointer(e,rect,rotated){
- // CSS-rotated portrait: logical lane Y maps right-to-left across screen X.
- const relative=rotated?(rect.right-e.clientX)/rect.width:(e.clientY-rect.top)/rect.height;
+ // Each lane is a VERTICAL column in the landscape gameplay surface.
+ // With the portrait webview rotated clockwise, the logical X axis maps
+ // to the displayed screen Y axis, not the screen X axis.
+ const relative=rotated?(e.clientY-rect.top)/rect.height:(e.clientX-rect.left)/rect.width;
  return Math.max(0,Math.min(4,Math.floor(5*relative)));
 }
 C.addEventListener('pointerdown',e=>{
