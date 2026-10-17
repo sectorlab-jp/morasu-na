@@ -690,7 +690,7 @@ $('#menuHelp').addEventListener('click',()=>{titleMenu.hidden=true;helpMenu.hidd
 $('#menuBack').addEventListener('click',()=>{helpMenu.hidden=true;titleMenu.hidden=false});
 $('#helpGo').addEventListener('click',goFromMenu);
 const logoSpriteCss=atlas.src;
-$('.menu-virus').forEach(e=>{e.style.backgroundImage='url("'+logoSpriteCss+'")'});
+Array.from(R.querySelectorAll('.menu-virus')).forEach(e=>{e.style.backgroundImage='url("'+logoSpriteCss+'")'});
 
 hud(startAt);requestAnimationFrame(frame);
 })();
