@@ -222,9 +222,14 @@ function playClip(when,offset){
  if(!clipBuffer||!ac||ac.state!=='running')return;
  stopClip();
  let s=ac.createBufferSource();s.buffer=clipBuffer;
- s.loop=true;s.loopStart=0;s.loopEnd=clipBuffer.duration;
+ s.loop=true;s.loopStart=0;
+ // 86 bars at 128 BPM are 161.25 seconds; exclude MP3 encoder padding on repeats.
+ const barSeconds=4*60/128;
+ const fullBarCount=Math.floor(clipBuffer.duration/barSeconds);
+ const loopLength=fullBarCount>0?fullBarCount*barSeconds:clipBuffer.duration;
+ s.loopEnd=loopLength;
  s.connect(music);
- const loopLength=clipBuffer.duration;let pos=((offset%loopLength)+loopLength)%loopLength;
+ let pos=((offset%loopLength)+loopLength)%loopLength;
  try{const scheduled=at(when);s.start(scheduled,pos);clipSource=s;audioAnchorContext=scheduled;audioAnchorOffsetSeconds=offset}catch(e){console.warn('Track playback error',e)}
 }
 
