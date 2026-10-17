@@ -47,7 +47,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 <div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">3レーン防衛、開始！</h2><p id="desc">奥から来るロゴのレーンを直接タップ！<br>タイミングがズレると情報漏洩。<br>⚠️①と⚠️②がそれぞれのレーンに出現！</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><button id="share" class="share" hidden>𝕏 スコアを共有</button></div></div></div>
 
 <div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>画面の上・中・下を直接タップ</span><button id="pause">一時停止</button></div>
-<div class="note">高速：シロイヌタケル便 ｜ 音源：ブラウザ生成オリジナルテクノ</div>
+<div class="note" id="music-note">高速：シロイヌタケル便 ｜ BGM：内蔵テクノ</div>
 </div><script>
 (function(){
 'use strict';
@@ -78,11 +78,12 @@ async function start(){
  $('#start').disabled=true;$('#start').textContent='🎵 音源を準備中…';
  try{if(clipLoad)await clipLoad;if(clipData&&!clipBuffer&&ac)clipBuffer=await ac.decodeAudioData(clipData.slice(0))}catch(e){console.warn('Music track fallback',e)}
  usingGarageBand=!!clipBuffer;
+ $('#music-note').textContent=usingGarageBand?'高速：シロイヌタケル便 ｜ BGM：GarageBandループ（128 BPM）':'高速：シロイヌタケル便 ｜ BGM：内蔵テクノ';
  $('#start').disabled=false;$('#start').textContent='▶ ゲームスタート';
  mode='play';score=combo=maxCombo=leaks=hits=perfect=0;counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;startAt=performance.now()+950;flashLanes=[0,0,0];$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt);if(usingGarageBand)playClip(startAt,0)}
 function finish(){if(mode!=='play')return;mode='over';stopClip();save();$('#title').textContent='🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#share').hidden=false;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;silence()}
 function pause(){if(mode!=='play')return;pausedAt=performance.now();mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#share').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
-function resume(){if(mode!=='pause')return;unlock();startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore();if(usingGarageBand)playClip(performance.now(),Math.max(0,(pausedAt-(startAt-(performance.now()-pausedAt)))/1000)%clipBuffer.duration)}
+function resume(){if(mode!=='pause')return;unlock();const elapsed=Math.max(0,(pausedAt-startAt)/1000);startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore();if(usingGarageBand)playClip(performance.now(),elapsed)}
 function attack(lane){if(mode!=='play')return;const now=performance.now();flashLanes[lane]=now+160;let found=null,distance=126;for(const e of notes){if(e.status!==0||e.lane!==lane)continue;const d=Math.abs(timeOf(e.beat)-now);if(d<distance){found=e;distance=d}}if(!found){let wrong=notes.some(e=>e.status===0&&Math.abs(timeOf(e.beat)-now)<140&&e.lane!==lane);combo=0;show(wrong?'WRONG LANE':'TOO EARLY');$('#judgement').style.color='#ff9ab4';hitFx(false);hud(now);return}
 found.status=1;hits++;counts[found.id]++;combo++;maxCombo=Math.max(combo,maxCombo);let grade=distance<=43?'PERFECT':distance<=88?'GREAT':'GOOD';if(grade==='PERFECT')perfect++;let points=(grade==='PERFECT'?250:grade==='GREAT'?150:80)*(found.fast?2:1)+Math.min(120,combo*3);score+=points;save();show(grade+' +'+points);$('#judgement').style.color=grade==='PERFECT'?'#ffe98c':'#7cf9e7';hitFx(true,grade,found.fast);hud(now)}
 function checkMiss(t){for(const e of notes){if(e.status===0&&t>timeOf(e.beat)+139){e.status=2;leaks++;combo=0;$('#judgement').style.color='#ff8d9f';show('🔓 MISS!');hitFx(false);if(leaks>=3){finish();break}}}}
@@ -144,9 +145,9 @@ function playClip(when,offset){
  if(!clipBuffer||!ac||ac.state!=='running')return;
  stopClip();
  let s=ac.createBufferSource();s.buffer=clipBuffer;
- s.loop=true;s.loopStart=0;s.loopEnd=clipBuffer.duration;
+ s.loop=true;s.loopStart=0;s.loopEnd=Math.min(15,clipBuffer.duration);
  s.connect(music);
- let pos=((offset%clipBuffer.duration)+clipBuffer.duration)%clipBuffer.duration;
+ const loopLength=Math.min(15,clipBuffer.duration);let pos=((offset%loopLength)+loopLength)%loopLength;
  try{s.start(at(when),pos);clipSource=s}catch(e){console.warn('Track playback error',e)}
 }
 
