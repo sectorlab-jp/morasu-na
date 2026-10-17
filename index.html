@@ -105,14 +105,14 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 @media (orientation:portrait) and (max-width:700px){.syncbox button{padding:3px 8px;font-size:13px}#syncLabel{font-size:9px}}
 </style></head>
 <body><div id="game">
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.6</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.7</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
 <div class="arena" id="arena"><canvas id="canvas"></canvas><div class="hint"><span>🛡️ 5-LANE DEFENSE</span><span id="warning">拍に合わせて防御！</span></div><div id="judgement"></div>
-<div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">5レーン防衛、開始！ ↻ 横持ち推奨</h2><p id="desc">📱 横向きで持って5列を直接タップ。<br>上から落ちるロゴを下の判定ラインで撃退！<br>⚠️①と⚠️②はそれぞれの着弾レーンを予告。</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><button id="share" class="share" hidden>𝕏 スコアを共有</button></div></div></div>
+<div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">5レーン防衛！ TAP ＋ HOLD</h2><p id="desc">📱 横持ちで両手プレイ！<br>【TAP】判定ラインで1回タップ。<br>【HOLD】水色の帯は押し続けて、終点で離そう！<br>⚠️①・⚠️②は高速ウイルスの予告。</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><button id="share" class="share" hidden>𝕏 スコアを共有</button></div></div></div>
 
-<div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>上から落下！5列の判定ラインで直接タップ</span><button id="pause">一時停止</button><div class="syncbox"><button id="syncMinus" aria-label="判定を早める">−</button><span id="syncLabel">同期 0ms</span><button id="syncPlus" aria-label="判定を遅らせる">＋</button></div></div>
+<div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>TAP：押す ／ HOLD：押し続けて終点で離す</span><button id="pause">一時停止</button><div class="syncbox"><button id="syncMinus" aria-label="判定を早める">−</button><span id="syncLabel">同期 0ms</span><button id="syncPlus" aria-label="判定を遅らせる">＋</button></div></div>
 <div class="note" id="music-note">高速：シロイヌタケル便 ｜ BGM：内蔵テクノ（My Song 3音源待ち）</div>
 </div><script>
 (function(){
@@ -121,20 +121,83 @@ const R=document.getElementById('game'),$=s=>R.querySelector(s),$$=s=>Array.from
 const NAMES=['フタバ','なま肉クイーン','マシーンオン','High SON','金の箸','サンドイッチクイーン','シロイヌタケル便','グランドパス','オモシー','スモールノイズ'];
 const atlas=new Image();atlas.src='data:image/webp;base64,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';
 const normalIds=[0,1,2,3,4,5,7,8,9];
-let mode='ready',score=0,combo=0,maxCombo=0,leaks=0,hits=0,best=0,perfect=0,curBeat=-1,startAt=0,pausedAt=0,notes=[],cues=[],counts=Array(10).fill(0),nextChunk=0,nextAudioHalf=0,nextCue=0,showTextUntil=0,flashLanes=Array(5).fill(0),bgmOn=true,sfxOn=true,ac,master,music,fx,stepIndex=0,previousLane=1,previousBeat=-3,defensePulse=0;
+let mode='ready',score=0,combo=0,maxCombo=0,leaks=0,hits=0,best=0,perfect=0,curBeat=-1,startAt=0,pausedAt=0,notes=[],cues=[],counts=Array(10).fill(0),nextChunk=0,nextAudioHalf=0,nextCue=0,showTextUntil=0,flashLanes=Array(5).fill(0),pointerHolds=new Map(),bgmOn=true,sfxOn=true,ac,master,music,fx,stepIndex=0,previousLane=1,previousBeat=-3,defensePulse=0;
 try{best=Number(localStorage.getItem('morasu-v09-best'))||0}catch(e){}
 function bpmAt(b){return usingGarageBand?128:Math.min(176,128+Math.floor(Math.max(0,b)/32)*6)}
 const bt=[0];function timeOf(b){const i=Math.floor(Math.max(0,b));while(bt.length<=i+1){let p=bt.length-1;bt.push(bt[p]+60000/bpmAt(p))}return startAt+bt[i]+(b-i)*(bt[i+1]-bt[i])}
 function show(t){$('#judgement').textContent=t;showTextUntil=gameClockNow()+370}
 function hud(t){$('#score').textContent=score.toLocaleString('ja-JP');$('#combo').textContent=combo;$('#best').textContent=best.toLocaleString('ja-JP');$('#leaks').textContent=leaks+'/3';$('#bpm').textContent=bpmAt(curBeat);let s=Math.floor(Math.max(0,(t-startAt)/1000));$('#clock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
-function pickLane(){let x=Math.floor(Math.random()*5);if(Math.random()<.72&&x===previousLane)x=(x+1+Math.floor(Math.random()*4))%5;previousLane=x;return x}
-function add(b,fast=false,forcedLane=null){if(b-previousBeat<.7)return null;const lane=forcedLane===null?pickLane():forcedLane;previousLane=lane;const note={beat:b,lane,id:fast?6:normalIds[Math.floor(Math.random()*normalIds.length)],fast,status:0};notes.push(note);previousBeat=b;return note}
+function pickLane(b=null,endBeat=null){
+ const allowed=[0,1,2,3,4].filter(lane=>!notes.some(n=>
+  n.type==='hold' && n.lane===lane &&
+  (b!==null? b<n.endBeat+.18 && (endBeat===null||endBeat>n.beat-.18):false)
+ ));
+ const options=allowed.length?allowed:[0,1,2,3,4];
+ let x=options[Math.floor(Math.random()*options.length)];
+ if(options.length>1&&Math.random()<.72&&x===previousLane){
+  const others=options.filter(v=>v!==previousLane);x=others[Math.floor(Math.random()*others.length)];
+ }
+ previousLane=x;return x;
+}
+function add(b,fast=false,forcedLane=null){
+ if(b-previousBeat<.7)return null;
+ let lane=forcedLane===null?pickLane(b):forcedLane;
+ if(notes.some(n=>n.type==='hold'&&n.lane===lane&&b>n.beat-.18&&b<n.endBeat+.18)){
+  const fallback=[0,1,2,3,4].filter(l=>!notes.some(n=>n.type==='hold'&&n.lane===l&&b>n.beat-.18&&b<n.endBeat+.18));
+  if(!fallback.length)return null;
+  lane=fallback[Math.floor(Math.random()*fallback.length)];
+ }
+ previousLane=lane;
+ const note={beat:b,lane,id:fast?6:normalIds[Math.floor(Math.random()*normalIds.length)],fast,type:'tap',status:0};
+ notes.push(note);previousBeat=b;return note;
+}
+function addHold(b,duration=3,exclude=[]){
+ const end=b+duration;
+ const occupied=new Set(exclude);
+ // The entire hold path must stay free of other notes and active hold bodies.
+ for(const n of notes){
+  if(n.type==='hold' && b<n.endBeat+.16 && end>n.beat-.16)occupied.add(n.lane);
+  else if(n.type!=='hold'&&n.beat>=b-.22&&n.beat<=end+.22)occupied.add(n.lane);
+ }
+ const choices=[0,1,2,3,4].filter(l=>!occupied.has(l));
+ if(!choices.length)return null;
+ const lane=choices[Math.floor(Math.random()*choices.length)];
+ const note={beat:b,endBeat:end,lane,id:normalIds[Math.floor(Math.random()*normalIds.length)],type:'hold',fast:false,status:0,pointerId:null,startGrade:null};
+ notes.push(note);return note;
+}
 function cue(b,kind,lane,targetBeat,order){cues.push({beat:b,kind,lane,targetBeat,order})}
-function fillBar(b,level,omit=[]){const positions=level===0?[0,2]:level===1?[0,1,3]:level===2?[0,1,2,3]:[0,.75,1.75,2.75,3.75];positions.forEach(off=>{if(!omit.some(i=>Math.abs(i-off)<.09)&&Math.random()<(level<2?.91:.97))add(b+off)})}
-function build(b){const stage=Math.floor(b/16),level=Math.min(3,Math.floor(Math.max(0,b)/64));if(stage===0){add(4);add(6);add(7);add(9);add(11);add(12);add(14);return}
-if(stage%3===1){fillBar(b,level);const first=add(b+8,true);const secondLane=(first.lane+1+Math.floor(Math.random()*4))%5;const second=add(b+9,true,secondLane);cue(b+4,'double',first.lane,b+8,1);cue(b+5,'double',second.lane,b+9,2);fillBar(b+12,level)}
-else if(stage%3===2){fillBar(b,level);const single=add(b+7,true);cue(b+5,'single',single.lane,b+7,1);fillBar(b+8,level);fillBar(b+12,level)}
-else{fillBar(b,level);fillBar(b+4,level);fillBar(b+8,level);fillBar(b+12,level)}
+function fillBar(b,level,omit=[]){
+ const positions=level===0?[0,2]:level===1?[0,1,3]:level===2?[0,1,2,3]:[0,.75,1.75,2.75,3.75];
+ positions.forEach(off=>{if(!omit.some(i=>Math.abs(i-off)<.09)&&Math.random()<(level<2?.91:.97))add(b+off)});
+}
+function build(b){
+ const stage=Math.floor(b/16),level=Math.min(3,Math.floor(Math.max(0,b)/64));
+ if(stage===0){
+  add(4);add(6);add(7);add(9);add(11);add(12);add(14);
+  return;
+ }
+ if(stage%3===1){
+  fillBar(b,level);
+  const first=add(b+8,true);
+  const secondLane=(first.lane+1+Math.floor(Math.random()*4))%5;
+  const second=add(b+9,true,secondLane);
+  cue(b+4,'double',first.lane,b+8,1);
+  cue(b+5,'double',second.lane,b+9,2);
+  fillBar(b+12,level);
+  addHold(b+1,4);
+  if(stage>=4)addHold(b+2,3);
+ }else if(stage%3===2){
+  fillBar(b,level);
+  const single=add(b+7,true);
+  cue(b+5,'single',single.lane,b+7,1);
+  fillBar(b+8,level);
+  fillBar(b+12,level);
+  addHold(b+9,3);
+ }else{
+  fillBar(b,level);fillBar(b+4,level);fillBar(b+8,level);fillBar(b+12,level);
+  addHold(b+1,3);
+  if(stage>=6)addHold(b+2,3);
+ }
 }
 function ensure(t){let n=0;while(timeOf(nextChunk)<t+8500&&n++<9){build(nextChunk);nextChunk+=16}notes.sort((a,b)=>a.beat-b.beat)}
 function save(){if(score>best){best=score;try{localStorage.setItem('morasu-v09-best',best)}catch(e){}}}
@@ -146,14 +209,73 @@ async function start(){
  usingGarageBand=!!clipBuffer;
  $('#music-note').textContent=usingGarageBand?'高速：シロイヌタケル便 ｜ BGM：My Song 3（128 BPM）':'高速：シロイヌタケル便 ｜ BGM：内蔵テクノ（My Song 3音源待ち）';
  $('#start').disabled=false;$('#start').textContent='▶ ゲームスタート';
- mode='play';score=combo=maxCombo=leaks=hits=perfect=0;counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;audioAnchorContext=null;audioAnchorOffsetSeconds=0;pausedSongElapsed=0;startAt=performance.now()+950;flashLanes=Array(5).fill(0);$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt);if(usingGarageBand)playClip(startAt,0)}
-function finish(){if(mode!=='play')return;mode='over';stopClip();save();$('#title').textContent='🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#share').hidden=false;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;silence()}
-function pause(){if(mode!=='play')return;pausedAt=performance.now();pausedSongElapsed=(usingGarageBand&&ac&&audioAnchorContext!==null)?Math.max(0,ac.currentTime-audioAnchorContext+audioAnchorOffsetSeconds):Math.max(0,(pausedAt-startAt)/1000);mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#share').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
+ mode='play';score=combo=maxCombo=leaks=hits=perfect=0;pointerHolds.clear();counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;audioAnchorContext=null;audioAnchorOffsetSeconds=0;pausedSongElapsed=0;startAt=performance.now()+950;flashLanes=Array(5).fill(0);$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt);if(usingGarageBand)playClip(startAt,0)}
+function finish(){if(mode!=='play')return;mode='over';pointerHolds.clear();stopClip();save();$('#title').textContent='🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#share').hidden=false;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;silence()}
+function pause(){if(mode!=='play')return;for(const e of notes){if(e.type==='hold'&&e.status===3){e.status=4;e.pointerId=null}}pointerHolds.clear();pausedAt=performance.now();pausedSongElapsed=(usingGarageBand&&ac&&audioAnchorContext!==null)?Math.max(0,ac.currentTime-audioAnchorContext+audioAnchorOffsetSeconds):Math.max(0,(pausedAt-startAt)/1000);mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#share').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
 function resume(){if(mode!=='pause')return;unlock();const elapsed=pausedSongElapsed;startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore();if(usingGarageBand)playClip(performance.now(),elapsed)}
-function attack(lane){if(mode!=='play')return;const now=gameClockNow();flashLanes[lane]=now+160;let found=null,distance=126;for(const e of notes){if(e.status!==0||e.lane!==lane)continue;const d=Math.abs(timeOf(e.beat)-now);if(d<distance){found=e;distance=d}}if(!found){let wrong=notes.some(e=>e.status===0&&Math.abs(timeOf(e.beat)-now)<140&&e.lane!==lane);combo=0;show(wrong?'WRONG LANE':'TOO EARLY');$('#judgement').style.color='#ff9ab4';hitFx(false);hud(now);return}
-found.status=1;hits++;counts[found.id]++;combo++;maxCombo=Math.max(combo,maxCombo);let grade=distance<=43?'PERFECT':distance<=88?'GREAT':'GOOD';if(grade==='PERFECT')perfect++;let points=(grade==='PERFECT'?250:grade==='GREAT'?150:80)*(found.fast?2:1)+Math.min(120,combo*3);score+=points;save();show(grade+' +'+points);$('#judgement').style.color=grade==='PERFECT'?'#ffe98c':'#7cf9e7';hitFx(true,grade,found.fast);hud(now)}
-function checkMiss(t){for(const e of notes){if(e.status===0&&t>timeOf(e.beat)+139){e.status=2;leaks++;combo=0;$('#judgement').style.color='#ff8d9f';show('🔓 MISS!');hitFx(false);if(leaks>=3){finish();break}}}}
-
+function gradeAt(ms){return ms<=43?'PERFECT':ms<=88?'GREAT':'GOOD'}
+function missNote(e,text='🔓 MISS!'){
+ if(e.status===2||e.status===1||e.status===4)return;
+ e.status=2;
+ if(e.type==='hold'&&e.pointerId!==null){pointerHolds.delete(e.pointerId);e.pointerId=null}
+ leaks++;combo=0;$('#judgement').style.color='#ff8d9f';show(text);hitFx(false);
+ if(leaks>=3)finish();
+}
+function award(e,grade,bonus=1){
+ e.status=1;e.pointerId=null;hits++;counts[e.id]++;combo++;maxCombo=Math.max(combo,maxCombo);
+ if(grade==='PERFECT')perfect++;
+ const points=(grade==='PERFECT'?250:grade==='GREAT'?150:80)*(e.fast?2:1)*bonus+Math.min(120,combo*3);
+ score+=points;save();show((e.type==='hold'?'HOLD ':'')+grade+' +'+points);
+ $('#judgement').style.color=grade==='PERFECT'?'#ffe98c':'#7cf9e7';
+ hitFx(true,grade,e.fast);hud(gameClockNow());
+}
+function attack(lane,pointerId=null){
+ if(mode!=='play')return false;
+ const now=gameClockNow();
+ flashLanes[lane]=now+160;
+ let found=null,distance=126;
+ for(const e of notes){
+  if(e.status!==0||e.lane!==lane)continue;
+  const d=Math.abs(timeOf(e.beat)-now);
+  if(d<distance){found=e;distance=d}
+ }
+ if(!found){
+  // Extra fingers during an ongoing Hold must not destroy a valid combo.
+  if(notes.some(e=>e.type==='hold'&&e.lane===lane&&e.status===3))return false;
+  const wrong=notes.some(e=>e.status===0&&Math.abs(timeOf(e.beat)-now)<140&&e.lane!==lane);
+  combo=0;show(wrong?'WRONG LANE':'TOO EARLY');
+  $('#judgement').style.color='#ff9ab4';hitFx(false);hud(now);return false;
+ }
+ const grade=gradeAt(distance);
+ if(found.type==='hold'){
+  found.status=3;found.startGrade=grade;found.pointerId=pointerId;
+  if(pointerId!==null)pointerHolds.set(pointerId,found);
+  show('🛡️ HOLD! 長押し');$('#judgement').style.color='#70f7dd';
+  hitFx(true,'GOOD',false);return true;
+ }
+ award(found,grade);return false;
+}
+function releaseHold(pointerId,cancelled=false){
+ const e=pointerHolds.get(pointerId);
+ if(!e||e.status!==3){pointerHolds.delete(pointerId);return}
+ pointerHolds.delete(pointerId);
+ const now=gameClockNow(),delta=now-timeOf(e.endBeat);
+ if(cancelled||delta< -150||delta>150){
+  missNote(e,cancelled?'HOLD CANCEL':'HOLD BREAK');return;
+ }
+ const endGrade=gradeAt(Math.abs(delta));
+ const grade=['GOOD','GREAT','PERFECT'][Math.min(
+  ['GOOD','GREAT','PERFECT'].indexOf(e.startGrade),
+  ['GOOD','GREAT','PERFECT'].indexOf(endGrade))];
+ award(e,grade,2);
+}
+function checkMiss(t){
+ for(const e of notes){
+  if(mode!=='play')break;
+  if(e.status===0&&t>timeOf(e.beat)+139)missNote(e,e.type==='hold'?'HOLD MISS':'🔓 MISS!');
+  else if(e.type==='hold'&&e.status===3&&t>timeOf(e.endBeat)+151)missNote(e,'HOLD OVER');
+ }
+}
 let drumSamples=null;
 function makeDrumSamples(){
  const sr=ac.sampleRate,PI2=2*Math.PI;
@@ -362,13 +484,31 @@ function render(t){
  g.fillStyle='#4ef5d422';g.fillRect(0,hitY-7,w,14);
  const leadNormal=1700,leadFast=430;
  for(const e of notes){
-  if(e.status!==0)continue;
+  if(e.status!==0&&!(e.type==='hold'&&e.status===3))continue;
   const remaining=timeOf(e.beat)-t,lead=e.fast?leadFast:leadNormal;
-  if(remaining>lead||remaining<-140)continue;
+  if(remaining>lead||(e.type!=='hold'&&remaining<-140))continue;
+  if(e.type==='hold'&&t>timeOf(e.endBeat)+180)continue;
   const progress=Math.max(0,Math.min(1,1-remaining/lead));
   const x=(e.lane+.5)*laneWidth;
   const y=spawnY+(hitY-spawnY)*progress;
   const size=Math.min(48,laneWidth*.48,Math.max(28,h*.19));
+  if(e.type==='hold'){
+   const endRemain=timeOf(e.endBeat)-t;
+   const tailProgress=Math.max(-.1,Math.min(1,1-endRemain/leadNormal));
+   const yTail=spawnY+(hitY-spawnY)*tailProgress;
+   const yHead=e.status===3?hitY:y;
+   const top=Math.max(-size*.3,Math.min(yTail,yHead)),bottom=Math.min(hitY,Math.max(yTail,yHead));
+   const bandWidth=Math.min(laneWidth*.47,46);
+   g.save();g.shadowColor='#3ffff0';g.shadowBlur=e.status===3?19:11;
+   g.fillStyle=e.status===3?'#66fbe1b8':'#31d9da8d';
+   g.strokeStyle='#bafff2';g.lineWidth=2.2;
+   g.fillRect(x-bandWidth/2,top,bandWidth,Math.max(6,bottom-top));
+   g.strokeRect(x-bandWidth/2,top,bandWidth,Math.max(6,bottom-top));
+   g.fillStyle='#d8fff6';g.textAlign='center';g.font='bold 11px system-ui';
+   g.fillText(e.status===3?'HOLDING':'HOLD',x,Math.max(32,Math.min(hitY-12,top+19)));
+   g.restore();
+   if(e.status===3){g.fillStyle='#84fff6';g.font='bold 15px system-ui';g.textAlign='center';g.fillText('🛡️',x,hitY-7);continue}
+  }
   if(e.fast){
    g.save();g.strokeStyle='#ffc46a';g.lineWidth=2.5;
    g.shadowColor='#f4a642';g.shadowBlur=12;
@@ -407,7 +547,7 @@ function render(t){
   g.fillStyle='#5afde83b';g.fillRect(0,hitY-4,w,8);
  }
 }
-function frame(t){if(mode==='play')t=gameClockNow();if(mode==='play'){ensure(t);schedule(t);checkMiss(t);while(timeOf(curBeat+1)<=t&&curBeat<30000)curBeat++;dots.forEach((el,i)=>el.classList.toggle('active',curBeat>=0&&i===curBeat%4));let approaching=cues.some(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat));$('#warning').textContent=approaching?'⚠️ 警告レーンに高速接近！':'上から落下！判定ラインでタップ！';hud(t)}render(t);if(t>showTextUntil)$('#judgement').textContent='';requestAnimationFrame(frame)}
+function frame(t){if(mode==='play')t=gameClockNow();if(mode==='play'){ensure(t);schedule(t);checkMiss(t);while(timeOf(curBeat+1)<=t&&curBeat<30000)curBeat++;dots.forEach((el,i)=>el.classList.toggle('active',curBeat>=0&&i===curBeat%4));let approaching=cues.some(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat));$('#warning').textContent=approaching?'⚠️ 警告レーンに高速接近！':'TAP！ HOLDは押し続けて離そう！';hud(t)}render(t);if(t>showTextUntil)$('#judgement').textContent='';requestAnimationFrame(frame)}
 function bindPad(button){const lane=Number(button.dataset.lane);button.addEventListener('pointerdown',e=>{e.preventDefault();button.classList.add('pressed');attack(lane)});button.addEventListener('pointerup',()=>button.classList.remove('pressed'));button.addEventListener('pointercancel',()=>button.classList.remove('pressed'))}
 // The canvas is the only gameplay input on phones; no lower lane buttons.
 function laneFromPointer(e,rect,rotated){
@@ -421,9 +561,22 @@ C.addEventListener('pointerdown',e=>{
  e.preventDefault();
  const rect=C.getBoundingClientRect();
  const rotated=!!(window.matchMedia&&window.matchMedia('(orientation: portrait) and (max-width:700px)').matches);
- attack(laneFromPointer(e,rect,rotated));
+ const lane=laneFromPointer(e,rect,rotated);
+ if(attack(lane,e.pointerId)){
+  try{C.setPointerCapture(e.pointerId)}catch(err){}
+ }
 });
-document.addEventListener('keydown',e=>{if(e.repeat)return;const map={'1':0,'2':1,'3':2,'4':3,'5':4,'ArrowUp':0,'ArrowDown':4};if(Object.prototype.hasOwnProperty.call(map,e.key)){e.preventDefault();attack(map[e.key])}if(e.code==='Space'){e.preventDefault();attack(1)}});
+C.addEventListener('pointerup',e=>{e.preventDefault();releaseHold(e.pointerId)});
+C.addEventListener('pointercancel',e=>{e.preventDefault();releaseHold(e.pointerId,true)});
+C.addEventListener('lostpointercapture',e=>{if(pointerHolds.has(e.pointerId))releaseHold(e.pointerId,true)});
+const keyLanes={'1':0,'2':1,'3':2,'4':3,'5':4,'ArrowUp':0,'ArrowDown':4,' ':2};
+document.addEventListener('keydown',e=>{
+ if(e.repeat)return;
+ if(Object.prototype.hasOwnProperty.call(keyLanes,e.key)){e.preventDefault();attack(keyLanes[e.key],'key:'+e.key)}
+});
+document.addEventListener('keyup',e=>{
+ if(Object.prototype.hasOwnProperty.call(keyLanes,e.key)){e.preventDefault();releaseHold('key:'+e.key)}
+});
 $('#start').addEventListener('click',()=>mode==='pause'?resume():start());$('#pause').addEventListener('click',()=>mode==='play'?pause():mode==='pause'?resume():null);
 $('#bgm').addEventListener('click',()=>{bgmOn=!bgmOn;$('#bgm').textContent='🎵 BGM '+(bgmOn?'ON':'OFF');if(mode==='play')restore()});
 $('#sfx').addEventListener('click',()=>{sfxOn=!sfxOn;$('#sfx').textContent='🔔 SE '+(sfxOn?'ON':'OFF');if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.02)});
