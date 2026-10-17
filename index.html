@@ -39,7 +39,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .note{font-size:10px;color:#7fa9ba;text-align:center;margin-top:9px}
 </style></head>
 <body><div id="game">
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.0</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.1</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
@@ -55,7 +55,7 @@ const R=document.getElementById('game'),$=s=>R.querySelector(s),$$=s=>Array.from
 const NAMES=['フタバ','なま肉クイーン','マシーンオン','High SON','金の箸','サンドイッチクイーン','シロイヌタケル便','グランドパス','オモシー','スモールノイズ'];
 const atlas=new Image();atlas.src='data:image/webp;base64,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';
 const normalIds=[0,1,2,3,4,5,7,8,9];
-let mode='ready',score=0,combo=0,maxCombo=0,leaks=0,hits=0,best=0,perfect=0,curBeat=-1,startAt=0,pausedAt=0,notes=[],cues=[],counts=Array(10).fill(0),nextChunk=0,nextAudioHalf=0,nextCue=0,showTextUntil=0,flashLanes=[0,0,0],bgmOn=true,sfxOn=true,ac,master,music,fx,noiseBuffer,stepIndex=0,previousLane=1,previousBeat=-3,defensePulse=0;
+let mode='ready',score=0,combo=0,maxCombo=0,leaks=0,hits=0,best=0,perfect=0,curBeat=-1,startAt=0,pausedAt=0,notes=[],cues=[],counts=Array(10).fill(0),nextChunk=0,nextAudioHalf=0,nextCue=0,showTextUntil=0,flashLanes=[0,0,0],bgmOn=true,sfxOn=true,ac,master,music,fx,stepIndex=0,previousLane=1,previousBeat=-3,defensePulse=0;
 try{best=Number(localStorage.getItem('morasu-v09-best'))||0}catch(e){}
 function bpmAt(b){return Math.min(176,128+Math.floor(Math.max(0,b)/32)*6)}
 const bt=[0];function timeOf(b){const i=Math.floor(Math.max(0,b));while(bt.length<=i+1){let p=bt.length-1;bt.push(bt[p]+60000/bpmAt(p))}return startAt+bt[i]+(b-i)*(bt[i+1]-bt[i])}
@@ -72,38 +72,148 @@ else{fillBar(b,level);fillBar(b+4,level);fillBar(b+8,level);fillBar(b+12,level)}
 }
 function ensure(t){let n=0;while(timeOf(nextChunk)<t+8500&&n++<9){build(nextChunk);nextChunk+=16}notes.sort((a,b)=>a.beat-b.beat)}
 function save(){if(score>best){best=score;try{localStorage.setItem('morasu-v09-best',best)}catch(e){}}}
-function start(){unlock();mode='play';score=combo=maxCombo=leaks=hits=perfect=0;counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;startAt=performance.now()+950;flashLanes=[0,0,0];$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.55:0,ac.currentTime,.015);ensure(startAt);hud(startAt)}
+function start(){unlock();mode='play';score=combo=maxCombo=leaks=hits=perfect=0;counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;startAt=performance.now()+950;flashLanes=[0,0,0];$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt)}
 function finish(){if(mode!=='play')return;mode='over';save();$('#title').textContent='🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#share').hidden=false;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;silence()}
 function pause(){if(mode!=='play')return;pausedAt=performance.now();mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#share').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence()}
 function resume(){if(mode!=='pause')return;unlock();startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore()}
 function attack(lane){if(mode!=='play')return;const now=performance.now();flashLanes[lane]=now+160;let found=null,distance=126;for(const e of notes){if(e.status!==0||e.lane!==lane)continue;const d=Math.abs(timeOf(e.beat)-now);if(d<distance){found=e;distance=d}}if(!found){let wrong=notes.some(e=>e.status===0&&Math.abs(timeOf(e.beat)-now)<140&&e.lane!==lane);combo=0;show(wrong?'WRONG LANE':'TOO EARLY');$('#judgement').style.color='#ff9ab4';hitFx(false);hud(now);return}
-found.status=1;hits++;counts[found.id]++;combo++;maxCombo=Math.max(combo,maxCombo);let grade=distance<=43?'PERFECT':distance<=88?'GREAT':'GOOD';if(grade==='PERFECT')perfect++;let points=(grade==='PERFECT'?250:grade==='GREAT'?150:80)*(found.fast?2:1)+Math.min(120,combo*3);score+=points;save();show(grade+' +'+points);$('#judgement').style.color=grade==='PERFECT'?'#ffe98c':'#7cf9e7';hitFx(true,grade);hud(now)}
+found.status=1;hits++;counts[found.id]++;combo++;maxCombo=Math.max(combo,maxCombo);let grade=distance<=43?'PERFECT':distance<=88?'GREAT':'GOOD';if(grade==='PERFECT')perfect++;let points=(grade==='PERFECT'?250:grade==='GREAT'?150:80)*(found.fast?2:1)+Math.min(120,combo*3);score+=points;save();show(grade+' +'+points);$('#judgement').style.color=grade==='PERFECT'?'#ffe98c':'#7cf9e7';hitFx(true,grade,found.fast);hud(now)}
 function checkMiss(t){for(const e of notes){if(e.status===0&&t>timeOf(e.beat)+139){e.status=2;leaks++;combo=0;$('#judgement').style.color='#ff8d9f';show('🔓 MISS!');hitFx(false);if(leaks>=3){finish();break}}}}
-function unlock(){try{if(!ac){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;ac=new AC();master=ac.createDynamicsCompressor();master.threshold.value=-18;master.knee.value=15;master.ratio.value=5;master.attack.value=.006;master.release.value=.18;master.connect(ac.destination);music=ac.createGain();music.gain.value=bgmOn?.43:0;music.connect(master);fx=ac.createGain();fx.gain.value=sfxOn?.55:0;fx.connect(master);noiseBuffer=ac.createBuffer(1,ac.sampleRate,ac.sampleRate);let data=noiseBuffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1}if(ac.state==='suspended')ac.resume()}catch(e){}}
-function at(t){return ac.currentTime+Math.max(.006,(t-performance.now())/1000)}
-function env(g,t,peak,dur){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,peak),t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+dur)}
-function osc(t,f,len,v,type,dest,cut=0){if(!ac||ac.state!=='running')return;let T=at(t),o=ac.createOscillator(),a=ac.createGain();o.type=type;o.frequency.setValueAtTime(f,T);env(a,T,v,len);let node=o;if(cut){let filter=ac.createBiquadFilter();filter.type='lowpass';filter.frequency.setValueAtTime(cut,T);filter.frequency.exponentialRampToValueAtTime(Math.max(100,cut*.45),T+len);o.connect(filter);node=filter}node.connect(a);a.connect(dest);o.start(T);o.stop(T+len+.025)}
-function noise(t,len,v,high,dest){if(!ac||ac.state!=='running')return;let T=at(t),s=ac.createBufferSource(),f=ac.createBiquadFilter(),a=ac.createGain();s.buffer=noiseBuffer;f.type='highpass';f.frequency.value=high;env(a,T,v,len);s.connect(f);f.connect(a);a.connect(dest);s.start(T);s.stop(T+len+.03)}
-function kick(t){if(!ac||ac.state!=='running')return;let T=at(t),o=ac.createOscillator(),v=ac.createGain();o.type='sine';o.frequency.setValueAtTime(170,T);o.frequency.exponentialRampToValueAtTime(47,T+.12);o.frequency.exponentialRampToValueAtTime(42,T+.3);v.gain.setValueAtTime(.0001,T);v.gain.exponentialRampToValueAtTime(.9,T+.003);v.gain.exponentialRampToValueAtTime(.0001,T+.36);o.connect(v);v.connect(music);o.start(T);o.stop(T+.38);noise(t,.018,.025,3800,music)}
-function bass(t,f){osc(t,f,.20,.21,'sawtooth',music,530);osc(t,f/2,.17,.11,'sine',music)}
-function chord(t,root){[1,1.2,1.5].forEach((ratio,i)=>osc(t,root*ratio,.23,.044,'sawtooth',music,1050+i*210))}
-function beatMusic(t,n){if(!bgmOn||!ac||ac.state!=='running')return;let q=Math.floor(n/2),on=n%2===0;if(on){kick(t);if(q%4===1||q%4===3){noise(t,.16,.16,1300,music);osc(t,183,.08,.045,'triangle',music)}if(q%2===0){let roots=[110,87.31,98,82.41];chord(t,roots[Math.floor(q/8)%4]*2)}}noise(t,on?.055:.075,on?.035:.075,on?5500:6800,music);let bassRoots=[55,43.65,49,41.2];if(!on||q%4===0){let root=bassRoots[Math.floor(q/8)%4];bass(t,root*((q%4===3)?1.5:1))}if(n%4===3||n%8===0){let a=[440,523.25,659.25,587.33,392,523.25,698.46,659.25];osc(t,a[Math.floor(n/2)%a.length],.09,.029,'triangle',music,2400)}}
-function cueFx(t,p){if(!ac||ac.state!=='running'||!sfxOn)return;osc(t,p===0?1250:1720,.14,.20,'square',fx,3200);osc(t+32,p===0?1850:2200,.06,.08,'sine',fx)}
-function hitFx(ok,grade='MISS'){
+
+let drumSamples=null;
+function makeDrumSamples(){
+ const sr=ac.sampleRate,PI2=2*Math.PI;
+ function make(name,len){
+  const buffer=ac.createBuffer(1,Math.ceil(sr*len),sr),p=buffer.getChannelData(0);
+  let seed=2166136261^name.length,lp=0,phase=0;
+  for(let i=0;i<p.length;i++){
+   const t=i/sr;
+   seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+   const white=seed/2147483648-1;
+   lp=.84*lp+.16*white;const high=white-lp;
+   let v=0;
+   switch(name){
+    case 'kick':
+     phase+=PI2*(47+167*Math.exp(-t*30))/sr;
+     v=Math.sin(phase)*Math.exp(-t*12.7)+high*Math.exp(-t*160)*.18;break;
+    case 'snare':
+     phase+=PI2*(160+18*Math.exp(-t*30))/sr;
+     v=high*Math.exp(-t*16.5)*.88+Math.sin(phase)*Math.exp(-t*28)*.35+white*Math.exp(-t*130)*.12;break;
+    case 'clap':{
+     const burst=q=>t>=q?Math.exp(-(t-q)*78):0;
+     const tail=t>.05?Math.exp(-(t-.05)*23):0;
+     v=(high*.9+white*.1)*(burst(0)+.8*burst(.016)+.7*burst(.032)+.55*tail);
+     break;
+    }
+    case 'hat':case 'open':{
+     const env=Math.exp(-t*(name==='hat'?62:15));
+     const metallic=Math.sin(PI2*4377*t)+.6*Math.sin(PI2*5881*t)+.4*Math.sin(PI2*7023*t);
+     v=env*(high*.7+metallic*.13);break;
+    }
+    case 'tom':
+     phase+=PI2*(78+175*Math.exp(-t*22))/sr;
+     v=Math.sin(phase)*Math.exp(-t*19)*.85+high*Math.exp(-t*75)*.13;break;
+    case 'rim':
+     v=(high*.8+Math.sin(PI2*1830*t)*.6)*Math.exp(-t*130);break;
+   }
+   p[i]=Math.tanh(v*1.55)*Math.min(1,(p.length-i)/(sr*.007));
+  }
+  return buffer;
+ }
+ drumSamples={kick:make('kick',.42),snare:make('snare',.29),clap:make('clap',.26),hat:make('hat',.13),open:make('open',.36),tom:make('tom',.28),rim:make('rim',.10)};
+}
+function unlock(){
+ try{
+  if(!ac){
+   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+   ac=new AC();master=ac.createDynamicsCompressor();
+   master.threshold.value=-17;master.knee.value=14;master.ratio.value=3.2;
+   master.attack.value=.004;master.release.value=.16;master.connect(ac.destination);
+   music=ac.createGain();music.gain.value=bgmOn?.62:0;music.connect(master);
+   fx=ac.createGain();fx.gain.value=sfxOn?.75:0;fx.connect(master);
+   makeDrumSamples();
+  }
+  if(ac.state==='suspended')ac.resume();
+ }catch(e){console.warn('Audio unavailable',e)}
+}
+function at(t){return ac.currentTime+Math.max(.009,(t-performance.now())/1000)}
+function env(g,t,peak,dur){
+ g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,peak),t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+}
+function playDrum(name,time,volume,bus=music){
+ if(!ac||ac.state!=='running'||!drumSamples||!drumSamples[name])return;
+ const T=at(time),source=ac.createBufferSource(),gain=ac.createGain();
+ source.buffer=drumSamples[name];gain.gain.setValueAtTime(volume,T);
+ source.connect(gain);gain.connect(bus);source.start(T);
+}
+function osc(t,f,len,v,type,dest,cut=0){
+ if(!ac||ac.state!=='running')return;
+ let T=at(t),o=ac.createOscillator(),a=ac.createGain();
+ o.type=type;o.frequency.setValueAtTime(f,T);env(a,T,v,len);
+ if(cut){
+  let filter=ac.createBiquadFilter();filter.type='lowpass';
+  filter.frequency.setValueAtTime(cut,T);
+  filter.frequency.exponentialRampToValueAtTime(Math.max(120,cut*.55),T+len);
+  o.connect(filter);filter.connect(a);
+ }else{o.connect(a)}
+ a.connect(dest);o.start(T);o.stop(T+len+.03);
+}
+function acidBass(t,root,accent){
+ if(!ac||ac.state!=='running')return;
+ const T=at(t),dur=.23,o1=ac.createOscillator(),o2=ac.createOscillator(),filter=ac.createBiquadFilter(),v=ac.createGain();
+ o1.type='sawtooth';o2.type='triangle';o1.frequency.value=root*2;o2.frequency.value=root;o1.detune.value=3;
+ filter.type='lowpass';filter.Q.value=7.2;
+ filter.frequency.setValueAtTime(accent?1450:850,T);
+ filter.frequency.exponentialRampToValueAtTime(accent?370:230,T+dur);
+ v.gain.setValueAtTime(.0001,T);v.gain.exponentialRampToValueAtTime(accent?.19:.14,T+.016);
+ v.gain.exponentialRampToValueAtTime(.0001,T+dur);
+ o1.connect(filter);o2.connect(filter);filter.connect(v);v.connect(music);
+ o1.start(T);o2.start(T);o1.stop(T+dur+.02);o2.stop(T+dur+.02);
+}
+function stab(t,root){
+ [1,1.189207,1.498307,2].forEach((ratio,i)=>osc(t,root*ratio,.17,i? .033:.055,i===3?'triangle':'sawtooth',music,820+i*170));
+}
+const bassRoots=[55,43.6535,49,41.2034],stabRoots=[220,174.614,196,164.814];
+const bassPattern=[0,0,7,0,3,7,0,10,0,0,7,3,0,10,7,3];
+function beatMusic(t,step){
+ if(!bgmOn||!ac||ac.state!=='running')return;
+ const beat=Math.floor(step/2),off=step%2===1,bar=Math.floor(beat/4);
+ if(!off){
+  playDrum('kick',t,.77);
+  if(beat%4===1||beat%4===3){playDrum('snare',t,.32);playDrum('clap',t+.013,.16)}
+  playDrum('hat',t,.082);
+  if(beat%4===0&&bar%2===0)stab(t,stabRoots[Math.floor(bar/2)%4]);
+ }else{
+  playDrum('open',t,.13);
+  if(step%4===3)playDrum('hat',t+.053,.065);
+ }
+ const i=step%16;
+ if([1,2,3,5,7,9,11,12,13,15].includes(i)){
+  const root=bassRoots[Math.floor(bar/2)%4];
+  acidBass(t,root*Math.pow(2,bassPattern[i]/12),i===3||i===11);
+ }
+ if(step%32===27){
+  osc(t,[440,392,349.23,329.63][Math.floor(bar/2)%4],.18,.043,'triangle',music,1250);
+ }
+}
+function cueFx(t,n){
+ if(!ac||ac.state!=='running'||!sfxOn)return;
+ osc(t,n===0?1350:1690,.09,.15,'square',fx,2700);
+ osc(t+38,n===0?1850:2230,.05,.055,'sine',fx);
+}
+function hitFx(ok,grade='MISS',fast=false){
  if(!ac||ac.state!=='running'||!sfxOn)return;
  const t=performance.now();
- if(!ok){noise(t,.095,.10,1700,fx);osc(t,110,.17,.10,'triangle',fx,700);return}
- // A layered acoustic-like drum strike: sharp snare crack + low tom punch + short rim click.
- const power=grade==='PERFECT'?1:grade==='GREAT'?.76:.52;
- noise(t,.11,.32*power,1250,fx);
- noise(t+.015,.06,.11*power,5500,fx);
- let T=at(t),o=ac.createOscillator(),v=ac.createGain();
- o.type='sine';o.frequency.setValueAtTime(225,T);o.frequency.exponentialRampToValueAtTime(88,T+.065);o.frequency.exponentialRampToValueAtTime(67,T+.14);
- env(v,T,.42*power,.18);o.connect(v);v.connect(fx);o.start(T);o.stop(T+.20);
- if(grade==='PERFECT')osc(t+.038,180,.06,.075,'triangle',fx,1700);
+ if(!ok){playDrum('rim',t,.20,fx);osc(t,100,.15,.11,'triangle',fx,750);return}
+ const weight=grade==='PERFECT'?1:grade==='GREAT'?.75:.54;
+ playDrum('snare',t,.64*weight,fx);
+ playDrum('tom',t,.44*weight,fx);
+ playDrum('clap',t+.012,.21*weight,fx);
+ if(grade==='PERFECT')playDrum('rim',t+.016,.17,fx);
+ if(fast)playDrum('kick',t,.35*weight,fx);
 }
 function silence(){if(music&&ac)music.gain.setTargetAtTime(0,ac.currentTime,.012)}
-function restore(){if(music&&ac)music.gain.setTargetAtTime(bgmOn?.43:0,ac.currentTime,.035)}
+function restore(){if(music&&ac)music.gain.setTargetAtTime(bgmOn?.62:0,ac.currentTime,.035)}
 function schedule(t){if(!ac||ac.state!=='running')return;let limit=t+118,k=0;while(timeOf(nextAudioHalf/2)<limit&&k++<16){let tm=timeOf(nextAudioHalf/2);if(tm>=t-48)beatMusic(tm,nextAudioHalf);nextAudioHalf++}k=0;while(nextCue<cues.length&&timeOf(cues[nextCue].beat)<limit&&k++<20){let c=cues[nextCue++],tm=timeOf(c.beat);if(tm>=t-48)cueFx(tm,c.kind==='double'?(c.beat%4===0?0:1):0)}}
 function render(t){const w=arena.clientWidth,h=arena.clientHeight,dpr=Math.min(2,devicePixelRatio||1);if(C.width!==Math.round(w*dpr)||C.height!==Math.round(h*dpr)){C.width=Math.round(w*dpr);C.height=Math.round(h*dpr)}g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);let bg=g.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#103755');bg.addColorStop(1,'#071527');g.fillStyle=bg;g.fillRect(0,0,w,h);
 let lineX=w*.19,landX=w*.95,lh=h/3;
@@ -135,7 +245,7 @@ C.addEventListener('pointerdown',e=>{e.preventDefault();const box=C.getBoundingC
 document.addEventListener('keydown',e=>{if(e.repeat)return;const map={'1':0,'2':1,'3':2,'ArrowUp':0,'ArrowDown':2};if(Object.prototype.hasOwnProperty.call(map,e.key)){e.preventDefault();attack(map[e.key])}if(e.code==='Space'){e.preventDefault();attack(1)}});
 $('#start').addEventListener('click',()=>mode==='pause'?resume():start());$('#pause').addEventListener('click',()=>mode==='play'?pause():mode==='pause'?resume():null);
 $('#bgm').addEventListener('click',()=>{bgmOn=!bgmOn;$('#bgm').textContent='🎵 BGM '+(bgmOn?'ON':'OFF');if(mode==='play')restore()});
-$('#sfx').addEventListener('click',()=>{sfxOn=!sfxOn;$('#sfx').textContent='🔔 SE '+(sfxOn?'ON':'OFF');if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.55:0,ac.currentTime,.02)});
+$('#sfx').addEventListener('click',()=>{sfxOn=!sfxOn;$('#sfx').textContent='🔔 SE '+(sfxOn?'ON':'OFF');if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.02)});
 $('#share').addEventListener('click',()=>{let top=counts.map((n,i)=>({n,i})).sort((a,b)=>b.n-a.n).slice(0,3).map(x=>NAMES[x.i]+' ×'+x.n).join(' / '),s='🛡️ 漏らすな！個人情報！ '+score.toLocaleString('ja-JP')+'点！\\n'+top+'\\nhttps://sectorlab-jp.github.io/morasu-na/\\n#漏らすな個人情報';window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(s),'_blank','noopener,noreferrer')});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='play')pause()});
 hud(startAt);requestAnimationFrame(frame);
