@@ -103,9 +103,96 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 #syncLabel{font-size:10px;color:#b3eae5;min-width:63px;text-align:center;white-space:nowrap}
 @media (orientation:landscape) and (max-height:700px){.syncbox button{padding:4px 10px}}
 @media (orientation:portrait) and (max-width:700px){.syncbox button{padding:3px 8px;font-size:13px}#syncLabel{font-size:9px}}
+
+/* v1.8: opening title / actual touchable menu */
+#game{position:relative}
+#menuScreen{position:absolute;inset:0;z-index:30;background:#061323;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5%;padding:12px 17px 14px;color:#f6feff;text-align:center}
+#menuScreen[hidden]{display:none!important}
+#menuScreen::before{content:"";position:absolute;inset:0;z-index:-3;background:linear-gradient(90deg,#061122e0,#081b3399 18%,#0916289c 82%,#041021e3),url('./start-art.webp') center/cover no-repeat,radial-gradient(ellipse at 50% 70%,#0a5f9d 0%,#092847 41%,#020c1a 100%)}
+#menuScreen::after{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(20% - 2px),#2bdfff18 calc(20% - 2px),#2bdfff18 20%),linear-gradient(0deg,#08203fb9,transparent 33%,transparent 60%,#041126c4)}
+.menu-header{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;color:#73e9fc;font-size:clamp(9px,1.7vw,12px);letter-spacing:2px;font-weight:700;z-index:1}
+.menu-version{border:1px solid #427ea7;border-radius:5px;padding:3px 8px;background:#09243dcc}
+.menu-title{text-shadow:0 3px 1px #0b233b,0 0 18px #167be9bf;line-height:1.04;font-size:clamp(28px,6.3vw,62px);letter-spacing:-.045em;font-weight:1000;margin:0;z-index:1;-webkit-text-stroke:.5px #dcf7ff}
+.menu-title strong{display:block;color:#61ffe1;font-size:1.04em;font-weight:1000;text-shadow:0 3px #0b2b4a,0 0 20px #00e2f6a6}
+.menu-copy{z-index:2;margin:1px 0;color:#f3fbff;font-size:clamp(11px,1.9vw,18px);line-height:1.4;font-weight:900;text-shadow:0 2px 8px #001426,0 0 4px #021426}
+.menu-copy em{color:#ffcf72;font-style:normal}
+.menu-scene{position:relative;width:min(90%,650px);flex:1 1 auto;max-height:42%;min-height:72px;margin:0 auto;pointer-events:none}
+.menu-lanes{position:absolute;inset:0;display:grid;grid-template-columns:repeat(5,1fr);transform:perspective(480px) rotateX(21deg);transform-origin:center bottom}
+.menu-lanes i{border-left:1px solid #42cfff51;border-right:1px solid #42cfff33;background:linear-gradient(180deg,transparent,#0772ca24 70%,#0ddcee28)}
+.menu-scene::after{content:"";position:absolute;left:3%;right:3%;bottom:13%;height:3px;background:#61f9e4;box-shadow:0 0 15px 4px #21dbd8}
+.menu-shield{position:absolute;left:50%;top:46%;transform:translate(-50%,-45%);font-size:clamp(42px,8vw,94px);filter:drop-shadow(0 0 20px #21fff4);z-index:3}
+.menu-ring{position:absolute;left:50%;top:52%;width:45%;height:47%;border:2px solid #39cfffab;border-radius:50%;transform:translate(-50%,-50%) rotateX(62deg);box-shadow:0 0 24px #30d6ef;z-index:2}
+.menu-virus{position:absolute;width:clamp(28px,5.5vw,58px);height:clamp(28px,5.5vw,58px);background-repeat:no-repeat;background-size:500% 200%;filter:drop-shadow(0 0 8px #1ba3ff);z-index:4;animation:virusHover 2.7s ease-in-out infinite alternate}
+.menu-virus:nth-of-type(1){left:5%;top:8%;background-position:0 0}
+.menu-virus:nth-of-type(2){left:23%;top:22%;background-position:25% 0;animation-delay:.3s}
+.menu-virus:nth-of-type(3){left:68%;top:10%;background-position:75% 0;animation-delay:.8s}
+.menu-virus:nth-of-type(4){right:5%;top:29%;background-position:0 100%;animation-delay:1.2s}
+.menu-virus:nth-of-type(5){right:29%;top:0%;background-position:25% 100%;animation-delay:.4s}
+@keyframes virusHover{0%{transform:translateY(-4px)}100%{transform:translateY(7px)}}
+.menu-features{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;z-index:1}
+.menu-features span{padding:4px 10px;background:#0b2447d9;border:1px solid #38acde;border-radius:6px;font-size:clamp(9px,1.6vw,12px);font-weight:800;color:#d4faff;white-space:nowrap}
+.menu-buttons{display:flex;justify-content:center;align-items:center;gap:10px;width:100%;z-index:5}
+.menu-btn{border-radius:10px;font-size:clamp(13px,2.4vw,22px);font-weight:900;padding:11px 20px;min-width:165px;max-width:330px;box-shadow:0 0 16px #07bceb5e;touch-action:manipulation}
+.menu-btn:active{transform:scale(.97)}
+#menuPlay{background:linear-gradient(110deg,#e66a17,#f9b743 53%,#ff762e);color:white;text-shadow:0 2px #8b3703;border:2px solid #ffd78e;flex:1}
+#menuHelp,#menuBack{background:#092648e8;color:#dcf8ff;border:1.5px solid #4cdafa;max-width:210px}
+.menu-subnote{color:#b8e9f2;font-size:clamp(9px,1.3vw,11px);z-index:2}
+#helpScreen{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:14px;background:linear-gradient(140deg,#041528,#092946 62%,#06172e);text-align:center}
+#helpScreen[hidden]{display:none!important}
+#helpScreen h2{font-size:clamp(20px,4vw,32px);color:#70f4e5;margin:0}
+.help-steps{width:min(100%,850px);display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.help-step{border:1px solid #387baf;border-radius:10px;background:#0b2642;padding:8px;display:flex;align-items:center;flex-direction:column;gap:6px;justify-content:center;min-width:0}
+.help-step strong{color:#74f6e3;font-size:clamp(12px,2vw,18px)}
+.help-step span{font-size:clamp(10px,1.3vw,13px);line-height:1.5;color:#c8e5f2}
+.help-icon{font-size:clamp(21px,4vw,40px)}
+.help-actions{display:flex;align-items:center;gap:12px}
+#helpGo{background:#ef8b2d;border-color:#ffcd76}
+@media(orientation:landscape) and (max-height:430px){
+ #menuScreen{padding:4px 12px 5px;gap:0.9%}
+ .menu-header{font-size:9px}
+ .menu-title{font-size:clamp(25px,5vw,42px)}
+ .menu-copy{font-size:clamp(10px,1.65vw,14px)}
+ .menu-scene{max-height:30%}
+ .menu-features span{padding:2px 8px;font-size:9px}
+ .menu-btn{padding:7px 17px;font-size:15px}
+ .menu-subnote{font-size:9px}
+ .help-step{padding:4px}
+ #helpScreen{gap:5px;padding:5px}
+}
+@media(orientation:portrait) and (max-width:700px){
+ #menuScreen{padding:4px 13px 8px;gap:1%}
+ .menu-title{font-size:clamp(25px,5vw,43px)}
+ .menu-copy{font-size:clamp(10px,1.8vw,14px)}
+ .menu-scene{max-height:34%}
+ .menu-btn{padding:8px 17px;font-size:15px}
+ .help-step{padding:5px}
+ #helpScreen{gap:5px}
+}
 </style></head>
 <body><div id="game">
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.7</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<section id="menuScreen" role="region" aria-label="タイトル画面">
+ <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.8</span></div>
+ <h2 class="menu-title">漏らすな！<strong>個人情報！</strong></h2>
+ <p class="menu-copy">情報漏洩する<em>企業ウィルス</em>から自身を守れ！<br>タイミングよくブロックだ！</p>
+ <div class="menu-scene" aria-hidden="true">
+  <div class="menu-lanes"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="menu-virus"></div><div class="menu-virus"></div><div class="menu-virus"></div><div class="menu-virus"></div><div class="menu-virus"></div>
+  <div class="menu-ring"></div><div class="menu-shield">🛡️</div>
+ </div>
+ <div class="menu-features"><span>▥ 5レーン</span><span>↓ 上から落下</span><span>🛡️ TAP ＋ HOLD</span><span>♫ My Song 3</span></div>
+ <div class="menu-buttons"><button id="menuPlay" class="menu-btn">▶ ゲーム開始</button><button id="menuHelp" class="menu-btn">遊び方</button></div>
+ <div class="menu-subnote">横持ち推奨・両手プレイ対応</div>
+</section>
+<section id="helpScreen" hidden role="region" aria-label="遊び方">
+ <h2>遊び方 / ミッション説明</h2>
+ <div class="help-steps">
+  <div class="help-step"><div class="help-icon">🛡️</div><strong>① 基本操作：TAP</strong><span>ウイルスが下の盾の位置に来た瞬間、対応するレーンをタップ！</span></div>
+  <div class="help-step"><div class="help-icon">⚠️</div><strong>② 高速ウイルス</strong><span>警告が出たレーンに高速で侵入。⚠️① → ⚠️②の順番を見極めよう！</span></div>
+  <div class="help-step"><div class="help-icon">🔒</div><strong>③ セキュリティウォール：HOLD</strong><span>水色の帯を長押しして防御を維持。終点で離す！ もう片方の手でTAPもできるよ。</span></div>
+ </div>
+ <div class="help-actions"><button id="menuBack" class="menu-btn">‹ もどる</button><button id="helpGo" class="menu-btn">▶ スタート</button></div>
+</section>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.8</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
@@ -585,6 +672,16 @@ function setCalibration(d){userCalibrationMs=Math.max(-200,Math.min(200,userCali
 refreshSyncLabel();
 $('#share').addEventListener('click',()=>{let top=counts.map((n,i)=>({n,i})).sort((a,b)=>b.n-a.n).slice(0,3).map(x=>NAMES[x.i]+' ×'+x.n).join(' / '),s='🛡️ 漏らすな！個人情報！ '+score.toLocaleString('ja-JP')+'点！\\n'+top+'\\nhttps://sectorlab-jp.github.io/morasu-na/\\n#漏らすな個人情報';window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(s),'_blank','noopener,noreferrer')});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='play')pause()});
+
+const titleMenu=$('#menuScreen'),helpMenu=$('#helpScreen');
+const goFromMenu=()=>{titleMenu.hidden=true;helpMenu.hidden=true;start()};
+$('#menuPlay').addEventListener('click',goFromMenu);
+$('#menuHelp').addEventListener('click',()=>{titleMenu.hidden=true;helpMenu.hidden=false});
+$('#menuBack').addEventListener('click',()=>{helpMenu.hidden=true;titleMenu.hidden=false});
+$('#helpGo').addEventListener('click',goFromMenu);
+const logoSpriteCss=atlas.src;
+$('.menu-virus').forEach(e=>{e.style.backgroundImage='url("'+logoSpriteCss+'")'});
+
 hud(startAt);requestAnimationFrame(frame);
 })();
 </script></body></html>
