@@ -381,9 +381,19 @@ function award(e,grade,bonus=1){
  $('#judgement').style.color=grade==='PERFECT'?'#ffe98c':'#7cf9e7';
  hitFx(true,grade,e.fast);hud(gameClockNow());
 }
-function attack(lane,pointerId=null){
+function inputClockAt(eventStamp){
+ const current=gameClockNow();
+ // iOS sometimes dispatches pointer events a little after the actual contact.
+ // Use the original high-resolution event time instead of the callback time.
+ if(typeof eventStamp==='number'&&Number.isFinite(eventStamp)){
+  const lag=performance.now()-eventStamp;
+  if(lag>=0&&lag<120)return current-lag;
+ }
+ return current;
+}
+function attack(lane,pointerId=null,eventStamp=null){
  if(mode!=='play')return false;
- const now=gameClockNow();
+ const now=inputClockAt(eventStamp);
  flashLanes[lane]=now+160;
  let found=null,distance=126;
  for(const e of notes){
@@ -407,11 +417,11 @@ function attack(lane,pointerId=null){
  }
  award(found,grade);return false;
 }
-function releaseHold(pointerId,cancelled=false){
+function releaseHold(pointerId,cancelled=false,eventStamp=null){
  const e=pointerHolds.get(pointerId);
  if(!e||e.status!==3){pointerHolds.delete(pointerId);return}
  pointerHolds.delete(pointerId);
- const now=gameClockNow(),delta=now-timeOf(e.endBeat);
+ const now=inputClockAt(eventStamp),delta=now-timeOf(e.endBeat);
  if(cancelled||delta< -150||delta>150){
   missNote(e,cancelled?'HOLD CANCEL':'HOLD BREAK');return;
  }
@@ -736,20 +746,20 @@ C.addEventListener('pointerdown',e=>{
  const rect=C.getBoundingClientRect();
  const rotated=!!(window.matchMedia&&window.matchMedia('(orientation: portrait) and (max-width:700px)').matches);
  const lane=laneFromPointer(e,rect,rotated);
- if(attack(lane,e.pointerId)){
+ if(attack(lane,e.pointerId,e.timeStamp)){
   try{C.setPointerCapture(e.pointerId)}catch(err){}
  }
 });
-C.addEventListener('pointerup',e=>{e.preventDefault();releaseHold(e.pointerId)});
-C.addEventListener('pointercancel',e=>{e.preventDefault();releaseHold(e.pointerId,true)});
+C.addEventListener('pointerup',e=>{e.preventDefault();releaseHold(e.pointerId,false,e.timeStamp)});
+C.addEventListener('pointercancel',e=>{e.preventDefault();releaseHold(e.pointerId,true,e.timeStamp)});
 C.addEventListener('lostpointercapture',e=>{if(pointerHolds.has(e.pointerId))releaseHold(e.pointerId,true)});
 const keyLanes={'1':0,'2':1,'3':2,'4':3,'5':4,'ArrowUp':0,'ArrowDown':4,' ':2};
 document.addEventListener('keydown',e=>{
  if(e.repeat)return;
- if(Object.prototype.hasOwnProperty.call(keyLanes,e.key)){e.preventDefault();attack(keyLanes[e.key],'key:'+e.key)}
+ if(Object.prototype.hasOwnProperty.call(keyLanes,e.key)){e.preventDefault();attack(keyLanes[e.key],'key:'+e.key,e.timeStamp)}
 });
 document.addEventListener('keyup',e=>{
- if(Object.prototype.hasOwnProperty.call(keyLanes,e.key)){e.preventDefault();releaseHold('key:'+e.key)}
+ if(Object.prototype.hasOwnProperty.call(keyLanes,e.key)){e.preventDefault();releaseHold('key:'+e.key,false,e.timeStamp)}
 });
 $('#start').addEventListener('click',()=>mode==='pause'?resume():start());$('#pause').addEventListener('click',()=>mode==='play'?pause():mode==='pause'?resume():null);
 $('#bgm').addEventListener('click',()=>{bgmOn=!bgmOn;$('#bgm').textContent='🎵 BGM '+(bgmOn?'ON':'OFF');if(mode==='play')restore()});
