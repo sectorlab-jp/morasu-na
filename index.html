@@ -1,5 +1,20 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#071426"><title>漏らすな！個人情報！ | 5レーン RHYTHM DEFENSE</title><style>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#071426"><title>漏らすな！個人情報！ | 5レーン RHYTHM DEFENSE</title>
+<meta name="description" content="5レーンのTAP・HOLDで迫りくる企業ウイルスをブロック！リズムに合わせて個人情報を守る、ゲームラボの無料ブラウザゲーム。">
+<link rel="canonical" href="https://sectorlab-jp.github.io/morasu-na/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ゲームラボ | GAME LAB">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:url" content="https://sectorlab-jp.github.io/morasu-na/">
+<meta property="og:title" content="漏らすな！個人情報！">
+<meta property="og:description" content="5レーンのTAP・HOLDで迫りくる企業ウイルスをブロック！リズムに合わせて個人情報を守る、ゲームラボの無料ブラウザゲーム。">
+<meta property="og:image" content="https://sectorlab-jp.github.io/morasu-na/start-art.webp">
+<meta property="og:image:alt" content="漏らすな！個人情報！のゲーム扉絵">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="漏らすな！個人情報！">
+<meta name="twitter:description" content="5レーンのTAP・HOLDで迫りくる企業ウイルスをブロック！リズムに合わせて個人情報を守る、ゲームラボの無料ブラウザゲーム。">
+<meta name="twitter:image" content="https://sectorlab-jp.github.io/morasu-na/start-art.webp">
+<style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#050d19;color:#e9faff;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",system-ui,sans-serif}
 button{font:inherit;cursor:pointer;touch-action:manipulation}button:focus-visible{outline:3px solid #89f3ff}
 #game{max-width:1100px;margin:auto;padding:12px 11px 18px;background:linear-gradient(155deg,#112b43,#071426 70%);min-height:100dvh;border-left:1px solid #2d4966;border-right:1px solid #2d4966}
@@ -680,7 +695,7 @@ $('#sfx').addEventListener('click',()=>{sfxOn=!sfxOn;$('#sfx').textContent='🔔
 $('#syncMinus').addEventListener('click',()=>setCalibration(-20));$('#syncPlus').addEventListener('click',()=>setCalibration(20));
 function setCalibration(d){userCalibrationMs=Math.max(-200,Math.min(200,userCalibrationMs+d));try{localStorage.setItem('morasu-calibration-ms',userCalibrationMs)}catch(e){}refreshSyncLabel()}
 refreshSyncLabel();
-$('#share').addEventListener('click',()=>{let top=counts.map((n,i)=>({n,i})).sort((a,b)=>b.n-a.n).slice(0,3).map(x=>NAMES[x.i]+' ×'+x.n).join(' / '),s='🛡️ 漏らすな！個人情報！ '+score.toLocaleString('ja-JP')+'点！\\n'+top+'\\nhttps://sectorlab-jp.github.io/morasu-na/\\n#漏らすな個人情報';window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(s),'_blank','noopener,noreferrer')});
+$('#share').addEventListener('click',()=>{let top=counts.map((n,i)=>({n,i})).sort((a,b)=>b.n-a.n).slice(0,3).map(x=>NAMES[x.i]+' ×'+x.n).join(' / '),s='🛡️ 漏らすな！個人情報！ '+score.toLocaleString('ja-JP')+'点！\n'+top+'\nhttps://sectorlab-jp.github.io/morasu-na/\n#漏らすな個人情報';window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(s),'_blank','noopener,noreferrer')});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='play')pause()});
 
 const titleMenu=$('#menuScreen'),helpMenu=$('#helpScreen');
