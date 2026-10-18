@@ -205,7 +205,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 </style></head>
 <body><div id="game">
 <section id="menuScreen" role="region" aria-label="タイトル画面">
- <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.8</span></div>
+ <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.9</span></div>
  <h2 class="menu-title">漏らすな！<strong>個人情報！</strong></h2>
  <p class="menu-copy">情報漏洩する<em>企業ウィルス</em>から自身を守れ！<br>タイミングよくブロックだ！</p>
  <div class="menu-scene" aria-hidden="true">
@@ -226,7 +226,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
  </div>
  <div class="help-actions"><button id="menuBack" class="menu-btn">‹ もどる</button><button id="helpGo" class="menu-btn">▶ スタート</button></div>
 </section>
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.8</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.9</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
@@ -248,45 +248,69 @@ function bpmAt(b){return usingGarageBand?128:Math.min(176,128+Math.floor(Math.ma
 const bt=[0];function timeOf(b){const i=Math.floor(Math.max(0,b));while(bt.length<=i+1){let p=bt.length-1;bt.push(bt[p]+60000/bpmAt(p))}return startAt+bt[i]+(b-i)*(bt[i+1]-bt[i])}
 function show(t){$('#judgement').textContent=t;showTextUntil=gameClockNow()+370}
 function hud(t){$('#score').textContent=score.toLocaleString('ja-JP');$('#combo').textContent=combo;$('#best').textContent=best.toLocaleString('ja-JP');$('#leaks').textContent=leaks+'/3';$('#bpm').textContent=bpmAt(curBeat);let s=Math.floor(Math.max(0,(t-startAt)/1000));$('#clock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
-function pickLane(b=null,endBeat=null){
- const allowed=[0,1,2,3,4].filter(lane=>!notes.some(n=>
-  n.type==='hold' && n.lane===lane &&
-  (b!==null? b<n.endBeat+.18 && (endBeat===null||endBeat>n.beat-.18):false)
- ));
- const options=allowed.length?allowed:[0,1,2,3,4];
- let x=options[Math.floor(Math.random()*options.length)];
- if(options.length>1&&Math.random()<.72&&x===previousLane){
-  const others=options.filter(v=>v!==previousLane);x=others[Math.floor(Math.random()*others.length)];
+// Gameplay requires at most two simultaneously occupied fingers.
+const INPUT_GUARD_BEATS=.32;
+function pressureAt(beat,collection){
+ let n=0;
+ for(const e of collection){
+  if(e.type==='hold'){
+   if(beat>=e.beat-INPUT_GUARD_BEATS&&beat<=e.endBeat+INPUT_GUARD_BEATS)n++;
+  }else if(Math.abs(beat-e.beat)<=INPUT_GUARD_BEATS)n++;
  }
- previousLane=x;return x;
+ return n;
+}
+function canPlace(note){
+ const end=note.type==='hold'?note.endBeat:note.beat;
+ const nearby=notes.filter(n=>(n.type==='hold'?n.endBeat:n.beat)>=note.beat-.75&&n.beat<=end+.75);
+ const all=[...nearby,note];
+ // A hold owns its lane for its full duration. Tap collisions also count.
+ for(const e of nearby){
+  if(e.lane!==note.lane)continue;
+  if(note.type==='hold'&&e.type==='hold'){
+   if(note.beat<e.endBeat+.25&&note.endBeat>e.beat-.25)return false;
+  }else if(note.type==='hold'){
+   if(e.beat>=note.beat-.25&&e.beat<=note.endBeat+.25)return false;
+  }else if(e.type==='hold'){
+   if(note.beat>=e.beat-.25&&note.beat<=e.endBeat+.25)return false;
+  }else if(Math.abs(note.beat-e.beat)<.45)return false;
+ }
+ const moments=[];
+ for(const e of all){moments.push(e.beat);if(e.type==='hold')moments.push(e.endBeat)}
+ moments.sort((a,b)=>a-b);
+ for(let i=0;i<moments.length;i++){
+  if(pressureAt(moments[i],all)>2)return false;
+  if(i>0&&pressureAt((moments[i-1]+moments[i])/2,all)>2)return false;
+ }
+ return true;
+}
+function chooseLane(beat,kind='tap',duration=0,except=[]){
+ const choices=[0,1,2,3,4].filter(lane=>!except.includes(lane)&&canPlace({
+  beat,endBeat:kind==='hold'?beat+duration:undefined,lane,type:kind
+ }));
+ if(!choices.length)return null;
+ const preferred=choices.length>1&&Math.random()<.72?choices.filter(l=>l!==previousLane):choices;
+ const pool=preferred.length?preferred:choices;
+ return pool[Math.floor(Math.random()*pool.length)];
 }
 function add(b,fast=false,forcedLane=null){
  if(b-previousBeat<.7)return null;
- let lane=forcedLane===null?pickLane(b):forcedLane;
- if(notes.some(n=>n.type==='hold'&&n.lane===lane&&b>n.beat-.18&&b<n.endBeat+.18)){
-  const fallback=[0,1,2,3,4].filter(l=>!notes.some(n=>n.type==='hold'&&n.lane===l&&b>n.beat-.18&&b<n.endBeat+.18));
-  if(!fallback.length)return null;
-  lane=fallback[Math.floor(Math.random()*fallback.length)];
- }
- previousLane=lane;
+ const lane=(forcedLane!==null&&canPlace({beat:b,lane:forcedLane,type:'tap'}))?
+  forcedLane:chooseLane(b);
+ if(lane===null)return null;
  const note={beat:b,lane,id:fast?6:normalIds[Math.floor(Math.random()*normalIds.length)],fast,type:'tap',status:0};
- notes.push(note);previousBeat=b;return note;
+ notes.push(note);previousBeat=b;previousLane=lane;return note;
 }
 function addHold(b,duration=3,exclude=[]){
- const end=b+duration;
- const occupied=new Set(exclude);
- // The entire hold path must stay free of other notes and active hold bodies.
- for(const n of notes){
-  if(n.type==='hold' && b<n.endBeat+.16 && end>n.beat-.16)occupied.add(n.lane);
-  else if(n.type!=='hold'&&n.beat>=b-.22&&n.beat<=end+.22)occupied.add(n.lane);
- }
- const choices=[0,1,2,3,4].filter(l=>!occupied.has(l));
- if(!choices.length)return null;
- const lane=choices[Math.floor(Math.random()*choices.length)];
- const note={beat:b,endBeat:end,lane,id:normalIds[Math.floor(Math.random()*normalIds.length)],type:'hold',fast:false,status:0,pointerId:null,startGrade:null};
- notes.push(note);return note;
+ const lane=chooseLane(b,'hold',duration,exclude);
+ if(lane===null)return null;
+ const note={beat:b,endBeat:b+duration,lane,id:normalIds[Math.floor(Math.random()*normalIds.length)],type:'hold',fast:false,status:0,pointerId:null,startGrade:null};
+ notes.push(note);previousLane=lane;return note;
 }
-function cue(b,kind,lane,targetBeat,order){cues.push({beat:b,kind,lane,targetBeat,order})}
+function cue(b,kind,lane,targetBeat,order){
+ // Never display a warning for an attack that was not scheduled.
+ if(lane!==null&&lane!==undefined&&notes.some(e=>e.fast&&e.type==='tap'&&e.lane===lane&&Math.abs(e.beat-targetBeat)<.001))
+  cues.push({beat:b,kind,lane,targetBeat,order});
+}
 function fillBar(b,level,omit=[]){
  const positions=level===0?[0,2]:level===1?[0,1,3]:level===2?[0,1,2,3]:[0,.75,1.75,2.75,3.75];
  positions.forEach(off=>{if(!omit.some(i=>Math.abs(i-off)<.09)&&Math.random()<(level<2?.91:.97))add(b+off)});
@@ -294,46 +318,53 @@ function fillBar(b,level,omit=[]){
 function build(b){
  const stage=Math.floor(b/16),level=Math.min(3,Math.floor(Math.max(0,b)/64));
  if(stage===0){
-  add(4);add(6);add(7);add(9);add(11);add(12);add(14);
-  return;
+  add(4);add(6);add(7);add(9);add(11);add(12);add(14);return;
  }
- if(stage%3===1){
+ if(stage>=4&&stage%3===1){
+  // A planned DOUBLE HOLD with a completely empty attack window.
+  add(b);add(b+1);
+  const hold1=addHold(b+2,4);
+  const hold2=hold1?addHold(b+2,4,[hold1.lane]):null;
+  // Finish BOTH holds at b+6, and allow the next TAP only at b+7.
+  add(b+7);
+  const first=add(b+11,true);
+  const second=add(b+12,true,first?((first.lane+1+Math.floor(Math.random()*4))%5):null);
+  if(first)cue(b+8,'double',first.lane,b+11,1);
+  if(second)cue(b+9,'double',second.lane,b+12,2);
+  add(b+14);add(b+15);
+ }else if(stage%3===1){
   fillBar(b,level);
   const first=add(b+8,true);
-  const secondLane=(first.lane+1+Math.floor(Math.random()*4))%5;
-  const second=add(b+9,true,secondLane);
-  cue(b+4,'double',first.lane,b+8,1);
-  cue(b+5,'double',second.lane,b+9,2);
+  const second=add(b+9,true,first?((first.lane+1+Math.floor(Math.random()*4))%5):null);
+  if(first)cue(b+4,'double',first.lane,b+8,1);
+  if(second)cue(b+5,'double',second.lane,b+9,2);
   fillBar(b+12,level);
   addHold(b+1,4);
-  if(stage>=4)addHold(b+2,3);
  }else if(stage%3===2){
   fillBar(b,level);
   const single=add(b+7,true);
-  cue(b+5,'single',single.lane,b+7,1);
-  fillBar(b+8,level);
-  fillBar(b+12,level);
+  if(single)cue(b+5,'single',single.lane,b+7,1);
+  fillBar(b+8,level);fillBar(b+12,level);
   addHold(b+9,3);
  }else{
   fillBar(b,level);fillBar(b+4,level);fillBar(b+8,level);fillBar(b+12,level);
   addHold(b+1,3);
-  if(stage>=6)addHold(b+2,3);
  }
 }
 function ensure(t){let n=0;while(timeOf(nextChunk)<t+8500&&n++<9){build(nextChunk);nextChunk+=16}notes.sort((a,b)=>a.beat-b.beat)}
 function save(){if(score>best){best=score;try{localStorage.setItem('morasu-v09-best',best)}catch(e){}}}
 async function start(){
  if(mode==='loading')return;
- unlock();mode='loading';
+ const unlocking=unlock();mode='loading';
  $('#start').disabled=true;$('#start').textContent='🎵 音源を準備中…';
- try{if(clipLoad)await clipLoad;if(clipData&&!clipBuffer&&ac)clipBuffer=await ac.decodeAudioData(clipData.slice(0))}catch(e){console.warn('Music track fallback',e)}
+ try{await unlocking;if(clipLoad)await clipLoad;if(clipData&&!clipBuffer&&ac)clipBuffer=await ac.decodeAudioData(clipData.slice(0))}catch(e){console.warn('Music track fallback',e)}
  usingGarageBand=!!clipBuffer;
  $('#music-note').textContent=usingGarageBand?'高速：シロイヌタケル便 ｜ BGM：My Song 3（128 BPM）':'高速：シロイヌタケル便 ｜ BGM：内蔵テクノ（My Song 3音源待ち）';
  $('#start').disabled=false;$('#start').textContent='▶ ゲームスタート';
  mode='play';score=combo=maxCombo=leaks=hits=perfect=0;pointerHolds.clear();counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;audioAnchorContext=null;audioAnchorOffsetSeconds=0;pausedSongElapsed=0;startAt=performance.now()+950;flashLanes=Array(5).fill(0);$('#cover').hidden=true;$('#result').hidden=true;$('#shareActions').hidden=true;$('#resultLinks').hidden=true;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt);if(usingGarageBand)playClip(startAt,0)}
 function finish(){if(mode!=='play')return;mode='over';pointerHolds.clear();stopClip();save();$('#title').textContent='🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#shareActions').hidden=false;$('#resultLinks').hidden=false;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;silence()}
-function pause(){if(mode!=='play')return;for(const e of notes){if(e.type==='hold'&&e.status===3){e.status=4;e.pointerId=null}}pointerHolds.clear();pausedAt=performance.now();pausedSongElapsed=(usingGarageBand&&ac&&audioAnchorContext!==null)?Math.max(0,ac.currentTime-audioAnchorContext+audioAnchorOffsetSeconds):Math.max(0,(pausedAt-startAt)/1000);mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#shareActions').hidden=true;$('#resultLinks').hidden=true;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
-function resume(){if(mode!=='pause')return;unlock();const elapsed=pausedSongElapsed;startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore();if(usingGarageBand)playClip(performance.now(),elapsed)}
+function pause(){if(mode!=='play')return;for(const e of notes){if(e.type==='hold'&&e.status===3){e.status=4;e.pointerId=null}}pointerHolds.clear();pausedAt=performance.now();pausedSongElapsed=(usingGarageBand&&ac&&audioAnchorContext!==null)?Math.max(0,audibleAudioTime()-audioAnchorContext+audioAnchorOffsetSeconds):Math.max(0,(pausedAt-startAt)/1000);mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#shareActions').hidden=true;$('#resultLinks').hidden=true;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
+async function resume(){if(mode!=='pause')return;await unlock();const elapsed=pausedSongElapsed;startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore();if(usingGarageBand)playClip(performance.now(),elapsed)}
 function gradeAt(ms){return ms<=43?'PERFECT':ms<=88?'GREAT':'GOOD'}
 function missNote(e,text='🔓 MISS!'){
  if(e.status===2||e.status===1||e.status===4)return;
@@ -442,18 +473,39 @@ function makeDrumSamples(){
 
 let clipData=null,clipBuffer=null,clipSource=null,usingGarageBand=false,clipLoad=null;
 // My Song 3 starts its kick about 80ms after the file begins.
-const FILE_BEAT_PHASE_MS=80;
+const FILE_BEAT_PHASE_MS=80; // Measured kick phase; manually adjustable below.
 let audioAnchorContext=null,audioAnchorOffsetSeconds=0,pausedSongElapsed=0,userCalibrationMs=0;
 try{userCalibrationMs=Math.max(-200,Math.min(200,Number(localStorage.getItem('morasu-calibration-ms'))||0))}catch(e){}
+function audibleAudioTime(){
+ if(!ac)return 0;
+ // Audio output is later than ac.currentTime; compensate using the browser's
+ // audio-output timestamp so visual movement and hit judgment share the HEARD beat.
+ if(typeof ac.getOutputTimestamp==='function'){
+  try{
+   const ts=ac.getOutputTimestamp();
+   if(Number.isFinite(ts.contextTime)&&ts.contextTime>0&&
+      Number.isFinite(ts.performanceTime)&&ts.performanceTime>0){
+    const position=ts.contextTime+(performance.now()-ts.performanceTime)/1000;
+    if(Number.isFinite(position)&&Math.abs(position-ac.currentTime)<.5)
+      return Math.max(0,Math.min(ac.currentTime,position));
+   }
+  }catch(e){}
+ }
+ // Older iOS WebViews may lack getOutputTimestamp.
+ const latency=Number(ac.outputLatency)>0?Number(ac.outputLatency):
+               Number(ac.baseLatency)>0?Number(ac.baseLatency):0;
+ return Math.max(0,ac.currentTime-Math.min(.18,latency));
+}
 function gameClockNow(){
  if(usingGarageBand&&ac&&ac.state==='running'&&audioAnchorContext!==null){
-  return startAt+((ac.currentTime-audioAnchorContext+audioAnchorOffsetSeconds)*1000)-FILE_BEAT_PHASE_MS-userCalibrationMs;
+  return startAt+((audibleAudioTime()-audioAnchorContext+audioAnchorOffsetSeconds)*1000)
+   -FILE_BEAT_PHASE_MS-userCalibrationMs;
  }
  return performance.now();
 }
 function refreshSyncLabel(){$('#syncLabel').textContent='同期 '+(userCalibrationMs>0?'+':'')+userCalibrationMs+'ms'}
 try{
- clipLoad=fetch('./bgm.mp3?v=13').then(r=>r.ok?r.arrayBuffer():null).then(data=>{clipData=data}).catch(()=>{clipData=null});
+ clipLoad=fetch('./bgm.mp3?v=19').then(r=>r.ok?r.arrayBuffer():null).then(data=>{clipData=data}).catch(()=>{clipData=null});
 }catch(e){}
 function stopClip(){
  if(!clipSource)return;
@@ -487,8 +539,9 @@ function unlock(){
    fx=ac.createGain();fx.gain.value=sfxOn?.75:0;fx.connect(master);
    makeDrumSamples();
   }
-  if(ac.state==='suspended')ac.resume();
- }catch(e){console.warn('Audio unavailable',e)}
+  if(ac.state==='suspended')return ac.resume().catch(e=>console.warn('Audio resume error',e));
+  return Promise.resolve();
+ }catch(e){console.warn('Audio unavailable',e);return Promise.resolve()}
 }
 function at(t){return ac.currentTime+Math.max(.009,(t-performance.now())/1000)}
 function env(g,t,peak,dur){
