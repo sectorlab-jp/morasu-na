@@ -43,6 +43,10 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .panel h2{font-size:22px;margin:0}.panel p{font-size:12px;line-height:1.6;color:#c7dae6;margin:0}
 .main{background:#72efd8;color:#063142;border:0;border-radius:12px;font-size:17px;font-weight:900;padding:13px 27px;min-width:180px}
 .share{background:#213d54;border:1px solid #4a7c93;border-radius:9px;padding:8px 16px;color:#e6f7ff;font-size:12px}
+.share-actions{display:flex;justify-content:center;gap:7px;flex-wrap:wrap}
+.share-actions[hidden],.share-message[hidden],#shareFallback[hidden]{display:none!important}
+.share-message{font-size:11px!important;color:#87f4df!important}
+#shareFallback{width:min(100%,460px);min-height:82px;background:#0c263a;color:#e9faff;border:1px solid #5c9cbe;border-radius:9px;font-size:12px;resize:vertical}
 .result{display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:165px;overflow:auto;width:100%;font-size:11px;text-align:left}
 .result div{background:#203e55;border-radius:6px;padding:4px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lanepads{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}
@@ -222,7 +226,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
 <div class="arena" id="arena"><canvas id="canvas"></canvas><div class="hint"><span>🛡️ 5-LANE DEFENSE</span><span id="warning">拍に合わせて防御！</span></div><div id="judgement"></div>
-<div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">5レーン防衛！ TAP ＋ HOLD</h2><p id="desc">📱 横持ちで両手プレイ！<br>【TAP】判定ラインで1回タップ。<br>【HOLD】水色の帯は押し続けて、終点で離そう！<br>⚠️①・⚠️②は高速ウイルスの予告。</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><button id="share" class="share" hidden>𝕏 スコアを共有</button></div></div></div>
+<div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">5レーン防衛！ TAP ＋ HOLD</h2><p id="desc">📱 横持ちで両手プレイ！<br>【TAP】判定ラインで1回タップ。<br>【HOLD】水色の帯は押し続けて、終点で離そう！<br>⚠️①・⚠️②は高速ウイルスの予告。</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><div id="shareActions" class="share-actions" hidden><button id="share" class="share" type="button">📤 スコアを共有</button><button id="copyScore" class="share" type="button">📋 投稿文をコピー</button></div><p id="shareMessage" class="share-message" role="status" aria-live="polite" hidden></p><textarea id="shareFallback" aria-label="共有する文章" readonly hidden></textarea></div></div></div>
 
 <div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>TAP：押す ／ HOLD：押し続けて終点で離す</span><button id="pause">一時停止</button><div class="syncbox"><button id="syncMinus" aria-label="判定を早める">−</button><span id="syncLabel">同期 0ms</span><button id="syncPlus" aria-label="判定を遅らせる">＋</button></div></div>
 <div class="note" id="music-note">高速：シロイヌタケル便 ｜ BGM：内蔵テクノ（My Song 3音源待ち）</div>
@@ -321,9 +325,9 @@ async function start(){
  usingGarageBand=!!clipBuffer;
  $('#music-note').textContent=usingGarageBand?'高速：シロイヌタケル便 ｜ BGM：My Song 3（128 BPM）':'高速：シロイヌタケル便 ｜ BGM：内蔵テクノ（My Song 3音源待ち）';
  $('#start').disabled=false;$('#start').textContent='▶ ゲームスタート';
- mode='play';score=combo=maxCombo=leaks=hits=perfect=0;pointerHolds.clear();counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;audioAnchorContext=null;audioAnchorOffsetSeconds=0;pausedSongElapsed=0;startAt=performance.now()+950;flashLanes=Array(5).fill(0);$('#cover').hidden=true;$('#result').hidden=true;$('#share').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt);if(usingGarageBand)playClip(startAt,0)}
-function finish(){if(mode!=='play')return;mode='over';pointerHolds.clear();stopClip();save();$('#title').textContent='🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#share').hidden=false;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;silence()}
-function pause(){if(mode!=='play')return;for(const e of notes){if(e.type==='hold'&&e.status===3){e.status=4;e.pointerId=null}}pointerHolds.clear();pausedAt=performance.now();pausedSongElapsed=(usingGarageBand&&ac&&audioAnchorContext!==null)?Math.max(0,ac.currentTime-audioAnchorContext+audioAnchorOffsetSeconds):Math.max(0,(pausedAt-startAt)/1000);mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#share').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
+ mode='play';score=combo=maxCombo=leaks=hits=perfect=0;pointerHolds.clear();counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;audioAnchorContext=null;audioAnchorOffsetSeconds=0;pausedSongElapsed=0;startAt=performance.now()+950;flashLanes=Array(5).fill(0);$('#cover').hidden=true;$('#result').hidden=true;$('#shareActions').hidden=true;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt);if(usingGarageBand)playClip(startAt,0)}
+function finish(){if(mode!=='play')return;mode='over';pointerHolds.clear();stopClip();save();$('#title').textContent='🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#shareActions').hidden=false;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;silence()}
+function pause(){if(mode!=='play')return;for(const e of notes){if(e.type==='hold'&&e.status===3){e.status=4;e.pointerId=null}}pointerHolds.clear();pausedAt=performance.now();pausedSongElapsed=(usingGarageBand&&ac&&audioAnchorContext!==null)?Math.max(0,ac.currentTime-audioAnchorContext+audioAnchorOffsetSeconds):Math.max(0,(pausedAt-startAt)/1000);mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#shareActions').hidden=true;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
 function resume(){if(mode!=='pause')return;unlock();const elapsed=pausedSongElapsed;startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore();if(usingGarageBand)playClip(performance.now(),elapsed)}
 function gradeAt(ms){return ms<=43?'PERFECT':ms<=88?'GREAT':'GOOD'}
 function missNote(e,text='🔓 MISS!'){
@@ -695,7 +699,45 @@ $('#sfx').addEventListener('click',()=>{sfxOn=!sfxOn;$('#sfx').textContent='🔔
 $('#syncMinus').addEventListener('click',()=>setCalibration(-20));$('#syncPlus').addEventListener('click',()=>setCalibration(20));
 function setCalibration(d){userCalibrationMs=Math.max(-200,Math.min(200,userCalibrationMs+d));try{localStorage.setItem('morasu-calibration-ms',userCalibrationMs)}catch(e){}refreshSyncLabel()}
 refreshSyncLabel();
-$('#share').addEventListener('click',()=>{let top=counts.map((n,i)=>({n,i})).sort((a,b)=>b.n-a.n).slice(0,3).map(x=>NAMES[x.i]+' ×'+x.n).join(' / '),s='🛡️ 漏らすな！個人情報！ '+score.toLocaleString('ja-JP')+'点！\n'+top+'\nhttps://sectorlab-jp.github.io/morasu-na/\n#漏らすな個人情報';window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(s),'_blank','noopener,noreferrer')});
+const GAME_URL='https://sectorlab-jp.github.io/morasu-na/';
+function resultShareText(){
+ const top=counts.map((n,i)=>({n,i})).sort((a,b)=>b.n-a.n).slice(0,3)
+  .map(x=>NAMES[x.i]+' ×'+x.n).join(' / ');
+ return '🛡️ 漏らすな！個人情報！ '+score.toLocaleString('ja-JP')+'点！\n'+
+   top+'\n'+GAME_URL+'\n#漏らすな個人情報';
+}
+function shareMessage(msg){
+ $('#shareMessage').textContent=msg;$('#shareMessage').hidden=false;
+}
+async function copyResultText(){
+ const text=resultShareText();
+ try{
+  if(!navigator.clipboard||!navigator.clipboard.writeText)throw new Error('No clipboard API');
+  await navigator.clipboard.writeText(text);
+  shareMessage('コピー完了！ Xアプリを開いて投稿欄に貼り付けてね。');
+ }catch(error){
+  const field=$('#shareFallback');
+  field.value=text;field.hidden=false;field.focus();field.select();
+  let copied=false;
+  try{copied=!!document.execCommand('copy')}catch(e){}
+  if(copied){field.hidden=true;shareMessage('コピー完了！ Xアプリの投稿欄に貼り付けてね。')}
+  else shareMessage('投稿文を下の欄からコピーして、Xアプリに貼り付けてね。');
+ }
+}
+$('#copyScore').addEventListener('click',()=>{copyResultText()});
+$('#share').addEventListener('click',async()=>{
+ const text=resultShareText(),url=GAME_URL;
+ if(navigator.share){
+  try{
+   // Apple's native share sheet lets players select their logged-in X app.
+   await navigator.share({title:'漏らすな！個人情報！',text:text.replace(url,'').trim(),url});
+   return;
+  }catch(e){
+   if(e&&e.name==='AbortError')return; // User closed the sheet.
+  }
+ }
+ await copyResultText(); // Reliable option for restricted in-app browsers.
+});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='play')pause()});
 
 const titleMenu=$('#menuScreen'),helpMenu=$('#helpScreen');
