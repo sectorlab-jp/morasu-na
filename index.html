@@ -202,10 +202,30 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .menu-virus:nth-of-type(4){left:68%;top:10%;background-position:75% 0;animation-delay:.8s}
 .menu-virus:nth-of-type(5){right:5%;top:29%;background-position:0 100%;animation-delay:1.2s}
 .menu-virus:nth-of-type(6){right:29%;top:0%;background-position:25% 100%;animation-delay:.4s}
+
+/* iOS Safari / in-app browser: game touches must never activate text
+   selection, callout menus, loupe magnification, or drag previews. */
+html,body,#game,#game *{
+ -webkit-user-select:none;
+ user-select:none;
+ -webkit-touch-callout:none;
+ -webkit-tap-highlight-color:transparent;
+ -webkit-user-drag:none;
+}
+#game{touch-action:manipulation}
+#canvas,.arena{touch-action:none;overscroll-behavior:contain}
+#game button{touch-action:manipulation}
+/* Keep the explicit share-copy fallback text selectable. */
+#shareFallback{
+ -webkit-user-select:text;
+ user-select:text;
+ -webkit-touch-callout:default;
+ touch-action:auto;
+}
 </style></head>
 <body><div id="game">
 <section id="menuScreen" role="region" aria-label="タイトル画面">
- <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.9</span></div>
+ <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.10</span></div>
  <h2 class="menu-title">漏らすな！<strong>個人情報！</strong></h2>
  <p class="menu-copy">情報漏洩する<em>企業ウィルス</em>から自身を守れ！<br>タイミングよくブロックだ！</p>
  <div class="menu-scene" aria-hidden="true">
@@ -226,7 +246,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
  </div>
  <div class="help-actions"><button id="menuBack" class="menu-btn">‹ もどる</button><button id="helpGo" class="menu-btn">▶ スタート</button></div>
 </section>
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.9</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.10</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
@@ -753,6 +773,25 @@ C.addEventListener('pointerdown',e=>{
 C.addEventListener('pointerup',e=>{e.preventDefault();releaseHold(e.pointerId,false,e.timeStamp)});
 C.addEventListener('pointercancel',e=>{e.preventDefault();releaseHold(e.pointerId,true,e.timeStamp)});
 C.addEventListener('lostpointercapture',e=>{if(pointerHolds.has(e.pointerId))releaseHold(e.pointerId,true)});
+
+// Stop WebKit selection handles, magnifying loupe and the hold-to-copy popup.
+// Do not block intentional links or the manual copy fallback text area.
+R.addEventListener('selectstart',e=>{
+ if(e.target&&e.target.closest&&e.target.closest('#shareFallback'))return;
+ e.preventDefault();
+});
+R.addEventListener('dragstart',e=>e.preventDefault());
+R.addEventListener('contextmenu',e=>{
+ if(e.target&&e.target.closest&&e.target.closest('a, #shareFallback'))return;
+ e.preventDefault();
+});
+C.addEventListener('touchmove',e=>{
+ if(e.cancelable)e.preventDefault();
+},{passive:false});
+R.addEventListener('gesturestart',e=>{
+ if(e.cancelable)e.preventDefault();
+},{passive:false});
+
 const keyLanes={'1':0,'2':1,'3':2,'4':3,'5':4,'ArrowUp':0,'ArrowDown':4,' ':2};
 document.addEventListener('keydown',e=>{
  if(e.repeat)return;
