@@ -225,7 +225,7 @@ html,body,#game,#game *{
 </style></head>
 <body><div id="game">
 <section id="menuScreen" role="region" aria-label="タイトル画面">
- <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.11</span></div>
+ <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.12</span></div>
  <h2 class="menu-title">漏らすな！<strong>個人情報！</strong></h2>
  <p class="menu-copy">情報漏洩する<em>企業ウィルス</em>から自身を守れ！<br>タイミングよくブロックだ！</p>
  <div class="menu-scene" aria-hidden="true">
@@ -246,7 +246,7 @@ html,body,#game,#game *{
  </div>
  <div class="help-actions"><button id="menuBack" class="menu-btn">‹ もどる</button><button id="helpGo" class="menu-btn">▶ スタート</button></div>
 </section>
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.11</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.12</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
@@ -518,15 +518,25 @@ let clipData=null,clipBuffer=null,clipSource=null,usingGarageBand=false,clipLoad
 // My Song 3 starts its kick about 80ms after the file begins.
 const FILE_BEAT_PHASE_MS=80; // Measured kick phase; manually adjustable below.
 let audioAnchorContext=null,audioAnchorOffsetSeconds=0,pausedSongElapsed=0;
-// Gameplay windows were landing about 60ms late in real iPhone tests.
-// Set the default calibration to -60ms, but do not apply it twice to
-// players who already saved a nonzero sync value (including -60ms).
-const DEFAULT_SYNC_MS=-60;
-let userCalibrationMs=DEFAULT_SYNC_MS;
+// Keep the physical audio phase measurement intact (80ms).
+// Bake the observed -60ms correction into the game itself so "同期 0ms"
+// feels exactly like the previous "同期 -60ms".
+const INTERNAL_SYNC_MS=-60;
+const SYNC_KEY='morasu-calibration-v2-ms';
+let userCalibrationMs=0;
 try{
- const saved=localStorage.getItem('morasu-calibration-ms');
- if(saved!==null&&saved!==''&&Number.isFinite(Number(saved))&&Number(saved)!==0)
+ const saved=localStorage.getItem(SYNC_KEY);
+ if(saved!==null&&saved!==''&&Number.isFinite(Number(saved))){
   userCalibrationMs=Math.max(-200,Math.min(200,Number(saved)));
+ }else{
+  // Migrate once from v1.11 (where -60ms was the implicit default).
+  // Previously saved -60 -> new 0; previously saved -40 -> new +20.
+  const legacy=localStorage.getItem('morasu-calibration-ms');
+  const legacyEffective=legacy!==null&&legacy!==''&&Number.isFinite(Number(legacy))&&Number(legacy)!==0?
+   Number(legacy):-60;
+  userCalibrationMs=Math.max(-200,Math.min(200,legacyEffective-INTERNAL_SYNC_MS));
+  localStorage.setItem(SYNC_KEY,String(userCalibrationMs));
+ }
 }catch(e){}
 function audibleAudioTime(){
  if(!ac)return 0;
@@ -551,7 +561,7 @@ function audibleAudioTime(){
 function gameClockNow(){
  if(usingGarageBand&&ac&&ac.state==='running'&&audioAnchorContext!==null){
   return startAt+((audibleAudioTime()-audioAnchorContext+audioAnchorOffsetSeconds)*1000)
-   -FILE_BEAT_PHASE_MS-userCalibrationMs;
+   -FILE_BEAT_PHASE_MS-INTERNAL_SYNC_MS-userCalibrationMs;
  }
  return performance.now();
 }
@@ -826,7 +836,7 @@ $('#start').addEventListener('click',()=>mode==='pause'?resume():start());$('#pa
 $('#bgm').addEventListener('click',()=>{bgmOn=!bgmOn;$('#bgm').textContent='🎵 BGM '+(bgmOn?'ON':'OFF');if(mode==='play')restore()});
 $('#sfx').addEventListener('click',()=>{sfxOn=!sfxOn;$('#sfx').textContent='🔔 SE '+(sfxOn?'ON':'OFF');if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.02)});
 $('#syncMinus').addEventListener('click',()=>setCalibration(-20));$('#syncPlus').addEventListener('click',()=>setCalibration(20));
-function setCalibration(d){userCalibrationMs=Math.max(-200,Math.min(200,userCalibrationMs+d));try{localStorage.setItem('morasu-calibration-ms',userCalibrationMs)}catch(e){}refreshSyncLabel()}
+function setCalibration(d){userCalibrationMs=Math.max(-200,Math.min(200,userCalibrationMs+d));try{localStorage.setItem(SYNC_KEY,String(userCalibrationMs))}catch(e){}refreshSyncLabel()}
 refreshSyncLabel();
 const GAME_URL='https://sectorlab-jp.github.io/morasu-na/';
 function resultShareText(){
