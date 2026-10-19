@@ -225,7 +225,7 @@ html,body,#game,#game *{
 </style></head>
 <body><div id="game">
 <section id="menuScreen" role="region" aria-label="タイトル画面">
- <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.10</span></div>
+ <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.11</span></div>
  <h2 class="menu-title">漏らすな！<strong>個人情報！</strong></h2>
  <p class="menu-copy">情報漏洩する<em>企業ウィルス</em>から自身を守れ！<br>タイミングよくブロックだ！</p>
  <div class="menu-scene" aria-hidden="true">
@@ -246,7 +246,7 @@ html,body,#game,#game *{
  </div>
  <div class="help-actions"><button id="menuBack" class="menu-btn">‹ もどる</button><button id="helpGo" class="menu-btn">▶ スタート</button></div>
 </section>
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.10</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.11</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
@@ -270,6 +270,8 @@ function show(t){$('#judgement').textContent=t;showTextUntil=gameClockNow()+370}
 function hud(t){$('#score').textContent=score.toLocaleString('ja-JP');$('#combo').textContent=combo;$('#best').textContent=best.toLocaleString('ja-JP');$('#leaks').textContent=leaks+'/3';$('#bpm').textContent=bpmAt(curBeat);let s=Math.floor(Math.max(0,(t-startAt)/1000));$('#clock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
 // Gameplay requires at most two simultaneously occupied fingers.
 const INPUT_GUARD_BEATS=.32;
+// Avoid TAP at the exact start or release of a HOLD (especially the right-side note in the 25s recording).
+const HOLD_START_CLEAR_BEATS=.60,HOLD_END_CLEAR_BEATS=.72;
 function pressureAt(beat,collection){
  let n=0;
  for(const e of collection){
@@ -283,6 +285,14 @@ function canPlace(note){
  const end=note.type==='hold'?note.endBeat:note.beat;
  const nearby=notes.filter(n=>(n.type==='hold'?n.endBeat:n.beat)>=note.beat-.75&&n.beat<=end+.75);
  const all=[...nearby,note];
+ // Never demand a tap while the other finger is pressing/releasing a HOLD.
+ // This check is symmetrical: it works whether the HOLD or TAP was added first.
+ for(const e of nearby){
+  if((e.type==='hold')===(note.type==='hold'))continue;
+  const hold=e.type==='hold'?e:note,tap=e.type==='hold'?note:e;
+  if(Math.abs(tap.beat-hold.beat)<HOLD_START_CLEAR_BEATS ||
+     Math.abs(tap.beat-hold.endBeat)<HOLD_END_CLEAR_BEATS)return false;
+ }
  // A hold owns its lane for its full duration. Tap collisions also count.
  for(const e of nearby){
   if(e.lane!==note.lane)continue;
@@ -353,22 +363,25 @@ function build(b){
   if(second)cue(b+9,'double',second.lane,b+12,2);
   add(b+14);add(b+15);
  }else if(stage%3===1){
+  // Reserve HOLD first: later taps cannot land on its start/end beats.
+  addHold(b+1,4);
   fillBar(b,level);
   const first=add(b+8,true);
   const second=add(b+9,true,first?((first.lane+1+Math.floor(Math.random()*4))%5):null);
   if(first)cue(b+4,'double',first.lane,b+8,1);
   if(second)cue(b+5,'double',second.lane,b+9,2);
   fillBar(b+12,level);
-  addHold(b+1,4);
  }else if(stage%3===2){
   fillBar(b,level);
   const single=add(b+7,true);
   if(single)cue(b+5,'single',single.lane,b+7,1);
-  fillBar(b+8,level);fillBar(b+12,level);
+  // 25s recording: the previous chart put a TAP at b+12, exactly when HOLD ended.
+  // Place the HOLD first, then reject unsafe start/end TAPs.
   addHold(b+9,3);
+  fillBar(b+8,level);fillBar(b+12,level);
  }else{
-  fillBar(b,level);fillBar(b+4,level);fillBar(b+8,level);fillBar(b+12,level);
   addHold(b+1,3);
+  fillBar(b,level);fillBar(b+4,level);fillBar(b+8,level);fillBar(b+12,level);
  }
 }
 function ensure(t){let n=0;while(timeOf(nextChunk)<t+8500&&n++<9){build(nextChunk);nextChunk+=16}notes.sort((a,b)=>a.beat-b.beat)}
@@ -504,8 +517,17 @@ function makeDrumSamples(){
 let clipData=null,clipBuffer=null,clipSource=null,usingGarageBand=false,clipLoad=null;
 // My Song 3 starts its kick about 80ms after the file begins.
 const FILE_BEAT_PHASE_MS=80; // Measured kick phase; manually adjustable below.
-let audioAnchorContext=null,audioAnchorOffsetSeconds=0,pausedSongElapsed=0,userCalibrationMs=0;
-try{userCalibrationMs=Math.max(-200,Math.min(200,Number(localStorage.getItem('morasu-calibration-ms'))||0))}catch(e){}
+let audioAnchorContext=null,audioAnchorOffsetSeconds=0,pausedSongElapsed=0;
+// Gameplay windows were landing about 60ms late in real iPhone tests.
+// Set the default calibration to -60ms, but do not apply it twice to
+// players who already saved a nonzero sync value (including -60ms).
+const DEFAULT_SYNC_MS=-60;
+let userCalibrationMs=DEFAULT_SYNC_MS;
+try{
+ const saved=localStorage.getItem('morasu-calibration-ms');
+ if(saved!==null&&saved!==''&&Number.isFinite(Number(saved))&&Number(saved)!==0)
+  userCalibrationMs=Math.max(-200,Math.min(200,Number(saved)));
+}catch(e){}
 function audibleAudioTime(){
  if(!ac)return 0;
  // Audio output is later than ac.currentTime; compensate using the browser's
