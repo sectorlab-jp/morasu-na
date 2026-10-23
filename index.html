@@ -245,10 +245,17 @@ html,body{
 @media (orientation:landscape) and (max-height:700px){
  #game{height:100svh}
 }
+/* v1.19: avoid iPhone double-tap Smart Zoom while tapping the rhythm lanes. */
+.arena,.arena *,#canvas{
+ touch-action:none!important;
+ -webkit-touch-callout:none!important;
+ -webkit-user-select:none!important;
+ user-select:none!important;
+}
 </style></head>
 <body><div id="game">
 <section id="menuScreen" role="region" aria-label="タイトル画面">
- <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.18</span></div>
+ <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.19</span></div>
  <h2 class="menu-title">漏らすな！<strong>個人情報！</strong></h2>
  <p class="menu-copy">情報漏洩する<em>企業ウィルス</em>から自身を守れ！<br>タイミングよくブロックだ！</p>
  <div class="menu-scene" aria-hidden="true">
@@ -270,7 +277,7 @@ html,body{
  <p class="help-goal">🏆 1曲最後まで守ればCLEAR！　🔓 漏洩3回でゲームオーバー</p>
  <div class="help-actions"><button id="menuBack" class="menu-btn">‹ もどる</button><button id="helpGo" class="menu-btn">▶ スタート</button></div>
 </section>
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.18</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.19</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
@@ -913,12 +920,19 @@ R.addEventListener('contextmenu',e=>{
  if(e.target&&e.target.closest&&e.target.closest('a, #shareFallback'))return;
  e.preventDefault();
 });
-C.addEventListener('touchmove',e=>{
- if(e.cancelable)e.preventDefault();
-},{passive:false});
-// Pinch-zoom/Smart Zoom can still fire on iOS even with viewport scale=1.
-// Capture the gesture before it changes the visual viewport; never stop taps.
+// WebKit can treat two fast game taps as a page double-tap-to-zoom,
+// especially in rotated/embedded Safari. This canvas has no click actions:
+// input uses pointerdown/pointerup, so canceling the native touchend default
+// stops browser zoom WITHOUT canceling TAP, HOLD, or two-finger pointer input.
 function stopBrowserScale(e){if(e.cancelable)e.preventDefault()}
+C.addEventListener('touchend',stopBrowserScale,{passive:false});
+C.addEventListener('touchmove',stopBrowserScale,{passive:false});
+C.addEventListener('touchstart',e=>{
+ if(e.touches&&e.touches.length>1)stopBrowserScale(e);
+},{passive:false});
+// Prevent Smart Zoom's dblclick default over the entire game UI.
+// Ordinary button/link clicks remain working.
+R.addEventListener('dblclick',stopBrowserScale,{capture:true,passive:false});
 for(const type of ['gesturestart','gesturechange','gestureend']){
  document.addEventListener(type,stopBrowserScale,{capture:true,passive:false});
 }
