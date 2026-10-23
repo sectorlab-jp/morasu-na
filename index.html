@@ -225,7 +225,7 @@ html,body,#game,#game *{
 </style></head>
 <body><div id="game">
 <section id="menuScreen" role="region" aria-label="タイトル画面">
- <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.16</span></div>
+ <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.17</span></div>
  <h2 class="menu-title">漏らすな！<strong>個人情報！</strong></h2>
  <p class="menu-copy">情報漏洩する<em>企業ウィルス</em>から自身を守れ！<br>タイミングよくブロックだ！</p>
  <div class="menu-scene" aria-hidden="true">
@@ -247,7 +247,7 @@ html,body,#game,#game *{
  <p class="help-goal">🏆 1曲最後まで守ればCLEAR！　🔓 漏洩3回でゲームオーバー</p>
  <div class="help-actions"><button id="menuBack" class="menu-btn">‹ もどる</button><button id="helpGo" class="menu-btn">▶ スタート</button></div>
 </section>
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.16</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.17</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
@@ -372,12 +372,14 @@ function build(b){
   add(b);add(b+2);add(b+4);
   return;
  }
- // First rush at ~1:19, when My Song 3 thins out (beat 169 = 79.219 s).
- // The two later rushes remain for the final third of the song.
- // ①-⑤ beeps are one beat apart; ⑤ sounds on the first virus's arrival.
- if(stage===10||stage===18||stage===20){
-  add(b);add(b+1);add(b+2);
-  const rushStart=stage===10?9:8; // first hit at 1:19.219
+ // Music-drop placements: first rush ends on the downbeat at ~1:22.
+ // The final 5th tap lands at ~2:26, replacing the old ~2:35 rush.
+ // ①-⑤ pips are one beat apart, and ⑤ coincides with the first fast-virus hit.
+ if(stage===10||stage===18||stage===19){
+  const rushStart=stage===10?11:stage===19?4:8;
+  // Stage 19 warnings begin at the bar itself. Do NOT add normal TAPs there,
+  // otherwise the warning pips would compete with real inputs.
+  if(stage!==19){add(b);add(b+1);add(b+2)}
   const lanes=shuffledLanes();
   const upcoming=[];
   for(let i=0;i<5;i++){
@@ -385,12 +387,12 @@ function build(b){
    if(note)upcoming.push(note);
   }
   if(upcoming.length===5){
-   // At 128 BPM, each pip is 468.75 ms apart.
-   // The first rush warns at 1:17.344 and strikes at 1:19.219–1:21.094.
+   // Stage 10: warning 1:18.28; hits 1:20.16 to 1:22.03.
+   // Stage 19: warning 2:22.50; hits 2:24.38 to 2:26.25.
    for(let i=0;i<5;i++)
     cue(b+rushStart-4+i,'five',upcoming[i].lane,upcoming[i].beat,i+1);
   }
-  add(b+14);
+  if(stage!==10)add(b+14);
   return;
  }
  if(stage>=4&&stage%3===1){
