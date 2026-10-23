@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#071426"><title>漏らすな！個人情報！ | 5レーン RHYTHM DEFENSE</title>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#071426"><title>漏らすな！個人情報！ | 5レーン RHYTHM DEFENSE</title>
 <meta name="description" content="5レーンのTAP・HOLDで迫りくる企業ウイルスをブロック！リズムに合わせて個人情報を守る、ゲームラボの無料ブラウザゲーム。">
 <link rel="canonical" href="https://sectorlab-jp.github.io/morasu-na/">
 <meta property="og:type" content="website">
@@ -73,8 +73,8 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 @media (orientation: portrait) and (max-width:700px){
  html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
  #game{
-   position:fixed;top:0;left:100dvw;
-   width:100dvh;height:100dvw;min-height:0;max-width:none;
+   position:fixed;top:0;left:100svw;
+   width:100svh;height:100svw;min-height:0;max-width:none;
    margin:0;padding:4px 10px 5px;
    transform-origin:top left;transform:rotate(90deg);
    overflow:hidden;display:flex;flex-direction:column;
@@ -113,7 +113,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 @media (orientation: landscape) and (max-height:700px){
  html,body{overflow:hidden;overscroll-behavior:none}
  #game{
-   height:100dvh;min-height:0;max-width:1100px;
+   height:100svh;min-height:0;max-width:1100px;
    overflow:hidden;display:flex;flex-direction:column;
    padding:4px 12px 5px
  }
@@ -212,9 +212,9 @@ html,body,#game,#game *{
  -webkit-tap-highlight-color:transparent;
  -webkit-user-drag:none;
 }
-#game{touch-action:manipulation}
+#game{touch-action:none}
 #canvas,.arena{touch-action:none;overscroll-behavior:contain}
-#game button{touch-action:manipulation}
+#game button,#game a{touch-action:manipulation}
 /* Keep the explicit share-copy fallback text selectable. */
 #shareFallback{
  -webkit-user-select:text;
@@ -222,10 +222,33 @@ html,body,#game,#game *{
  -webkit-touch-callout:default;
  touch-action:auto;
 }
+
+/* v1.18: keep the five-lane playfield fixed when Safari's toolbars appear,
+   and prevent WebKit text autosizing and browser-scale gestures. */
+html,body{
+ -webkit-text-size-adjust:100%;
+ text-size-adjust:100%;
+ overscroll-behavior:none;
+ touch-action:none;
+}
+#shareFallback{
+ font-size:16px; /* iOS does not auto-zoom a focused copy field */
+ touch-action:auto;
+}
+@media (orientation:portrait) and (max-width:700px){
+ #game{
+   left:100svw;
+   width:100svh;
+   height:100svw;
+ }
+}
+@media (orientation:landscape) and (max-height:700px){
+ #game{height:100svh}
+}
 </style></head>
 <body><div id="game">
 <section id="menuScreen" role="region" aria-label="タイトル画面">
- <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.17</span></div>
+ <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.18</span></div>
  <h2 class="menu-title">漏らすな！<strong>個人情報！</strong></h2>
  <p class="menu-copy">情報漏洩する<em>企業ウィルス</em>から自身を守れ！<br>タイミングよくブロックだ！</p>
  <div class="menu-scene" aria-hidden="true">
@@ -247,7 +270,7 @@ html,body,#game,#game *{
  <p class="help-goal">🏆 1曲最後まで守ればCLEAR！　🔓 漏洩3回でゲームオーバー</p>
  <div class="help-actions"><button id="menuBack" class="menu-btn">‹ もどる</button><button id="helpGo" class="menu-btn">▶ スタート</button></div>
 </section>
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.17</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.18</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
@@ -893,8 +916,16 @@ R.addEventListener('contextmenu',e=>{
 C.addEventListener('touchmove',e=>{
  if(e.cancelable)e.preventDefault();
 },{passive:false});
-R.addEventListener('gesturestart',e=>{
- if(e.cancelable)e.preventDefault();
+// Pinch-zoom/Smart Zoom can still fire on iOS even with viewport scale=1.
+// Capture the gesture before it changes the visual viewport; never stop taps.
+function stopBrowserScale(e){if(e.cancelable)e.preventDefault()}
+for(const type of ['gesturestart','gesturechange','gestureend']){
+ document.addEventListener(type,stopBrowserScale,{capture:true,passive:false});
+}
+R.addEventListener('touchmove',e=>{
+ // Preserve deliberate result scrolling and manual copy selection.
+ const scrollable=e.target&&e.target.closest&&e.target.closest('.panel, #shareFallback');
+ if((e.touches&&e.touches.length>1)||!scrollable)stopBrowserScale(e);
 },{passive:false});
 
 const keyLanes={'1':0,'2':1,'3':2,'4':3,'5':4,'ArrowUp':0,'ArrowDown':4,' ':2};
