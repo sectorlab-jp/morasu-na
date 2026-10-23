@@ -225,7 +225,7 @@ html,body,#game,#game *{
 </style></head>
 <body><div id="game">
 <section id="menuScreen" role="region" aria-label="タイトル画面">
- <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.14</span></div>
+ <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.15</span></div>
  <h2 class="menu-title">漏らすな！<strong>個人情報！</strong></h2>
  <p class="menu-copy">情報漏洩する<em>企業ウィルス</em>から自身を守れ！<br>タイミングよくブロックだ！</p>
  <div class="menu-scene" aria-hidden="true">
@@ -247,7 +247,7 @@ html,body,#game,#game *{
  <p class="help-goal">🏆 1曲最後まで守ればCLEAR！　🔓 漏洩3回でゲームオーバー</p>
  <div class="help-actions"><button id="menuBack" class="menu-btn">‹ もどる</button><button id="helpGo" class="menu-btn">▶ スタート</button></div>
 </section>
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.14</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.15</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
@@ -363,8 +363,8 @@ function build(b){
   add(b);add(b+2);add(b+4);
   return;
  }
- // Three late-song five-hit rushes. Each uses all five lanes once,
- // warns visibly 5 beats before impact and never overlaps a HOLD.
+ // Three late-song five-hit rushes. Each uses all five lanes once.
+ // Warnings 1,2,3,4,5 arrive one beat apart. Warning 5 sounds as virus 1 hits.
  if(stage===14||stage===18||stage===20){
   add(b);add(b+1);add(b+2);
   const lanes=shuffledLanes();
@@ -374,7 +374,9 @@ function build(b){
    if(n)upcoming.push(n);
   }
   if(upcoming.length===5){
-   for(let i=0;i<5;i++)cue(b+3,'five',upcoming[i].lane,upcoming[i].beat,i+1);
+   // 128 BPM: pip each 468.75ms, from b+4 to b+8.
+   // Warning 5 at b+8 coincides with first fast virus at b+8.
+   for(let i=0;i<5;i++)cue(b+4+i,'five',upcoming[i].lane,upcoming[i].beat,i+1);
   }
   add(b+14);
   return;
@@ -696,8 +698,10 @@ function beatMusic(t,step){
 }
 function cueFx(t,n){
  if(!ac||ac.state!=='running'||!sfxOn)return;
- osc(t,n===0?1350:1690,.09,.15,'square',fx,2700);
- osc(t+38,n===0?1850:2230,.05,.055,'sine',fx);
+ // Same short "pip" timbre across a series, with a small pitch rise for ①-⑤.
+ const base=1350+Math.max(0,Math.min(4,n))*115;
+ osc(t,base,.09,.15,'square',fx,2700);
+ osc(t+38,base+500,.05,.055,'sine',fx);
 }
 function hitFx(ok,grade='MISS',fast=false){
  if(!ac||ac.state!=='running'||!sfxOn)return;
@@ -712,7 +716,11 @@ function hitFx(ok,grade='MISS',fast=false){
 }
 function silence(){if(music&&ac)music.gain.setTargetAtTime(0,ac.currentTime,.012)}
 function restore(){if(music&&ac)music.gain.setTargetAtTime(bgmOn?.62:0,ac.currentTime,.035)}
-function schedule(t){if(!ac||ac.state!=='running')return;let limit=Math.min(t+118,startAt+trackDurationMs),k=0;while(timeOf(nextAudioHalf/2)<limit&&k++<16){let tm=timeOf(nextAudioHalf/2);if(tm>=t-48)beatMusic(tm,nextAudioHalf);nextAudioHalf++}k=0;while(nextCue<cues.length&&timeOf(cues[nextCue].beat)<limit&&k++<20){let c=cues[nextCue++],tm=timeOf(c.beat);if(tm>=t-48&&(c.kind!=='five'||c.order===1)){cueFx(performance.now()+(tm-t),0);if(c.kind==='five')cueFx(performance.now()+(tm-t)+155,1)}}}
+function schedule(t){if(!ac||ac.state!=='running')return;let limit=Math.min(t+118,startAt+trackDurationMs),k=0;while(timeOf(nextAudioHalf/2)<limit&&k++<16){let tm=timeOf(nextAudioHalf/2);if(tm>=t-48)beatMusic(tm,nextAudioHalf);nextAudioHalf++}k=0;while(nextCue<cues.length&&timeOf(cues[nextCue].beat)<limit&&k++<20){let c=cues[nextCue++],tm=timeOf(c.beat);if(tm>=t-48){
+  // One clear electronic pip per warning, rather than a double beep only on ①.
+  // This schedules ①②③④⑤ at their actual individual beat times.
+  cueFx(performance.now()+(tm-t),c.kind==='five'?c.order-1:0);
+ }}}
 function render(t){
  const w=arena.clientWidth,h=arena.clientHeight,dpr=Math.min(2,devicePixelRatio||1);
  if(C.width!==Math.round(w*dpr)||C.height!==Math.round(h*dpr)){
@@ -795,13 +803,15 @@ function render(t){
  // A shield in every lane just BELOW the hit bar.
  g.textAlign='center';g.font=Math.min(27,Math.max(17,h*.10))+'px system-ui';
  for(let i=0;i<5;i++)g.fillText('🛡️',(i+.5)*laneWidth,Math.min(h-5,hitY+Math.max(20,h*.12)));
- // Warning 1 and 2 are fixed to the exact columns their fast notes will hit.
- const activeCues=cues.filter(c=>t>=timeOf(c.beat)-80&&t<timeOf(c.targetBeat)+110);
+ // Warning markers arrive ONE BY ONE in the exact lanes they predict.
+ // Announced lanes stay faintly marked until the respective virus arrives.
+ const activeCues=cues.filter(c=>t>=timeOf(c.beat)-(c.kind==='five'?0:80)&&t<timeOf(c.targetBeat)+110);
  for(const c of activeCues){
   const x=(c.lane+.5)*laneWidth,bw=Math.min(78,laneWidth*.83),bh=Math.min(38,h*.24),cy=Math.min(hitY*.35,Math.max(31,h*.20));
-  const pulse=.78+.22*Math.sin((t-timeOf(c.beat))/85);
-  g.save();g.globalAlpha=pulse;g.fillStyle='#513311e9';g.strokeStyle='#ffcf69';
-  g.shadowColor='#ffa727';g.shadowBlur=9;g.lineWidth=2;g.beginPath();
+  const since=t-timeOf(c.beat),fresh=since>=0&&since<280;
+  const pulse=fresh?1:.64;
+  g.save();g.globalAlpha=pulse;g.fillStyle=fresh?'#784515':'#513311e9';g.strokeStyle=fresh?'#fff4a2':'#ffcf69';
+  g.shadowColor='#ffa727';g.shadowBlur=fresh?18:7;g.lineWidth=fresh?3:2;g.beginPath();
   g.roundRect(x-bw/2,cy-bh/2,bw,bh,8);g.fill();g.stroke();
   g.shadowBlur=0;g.fillStyle='#fff0c1';
   g.font='bold '+Math.min(20,bh*.58)+'px system-ui';g.textAlign='center';
