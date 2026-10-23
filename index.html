@@ -163,7 +163,7 @@ canvas{width:100%;height:100%;display:block;touch-action:none}
 .menu-subnote{color:#b8e9f2;font-size:clamp(9px,1.3vw,11px);z-index:2}
 #helpScreen{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:14px;background:linear-gradient(140deg,#041528,#092946 62%,#06172e);text-align:center}
 #helpScreen[hidden]{display:none!important}
-#helpScreen h2{font-size:clamp(20px,4vw,32px);color:#70f4e5;margin:0}
+#helpScreen h2{font-size:clamp(20px,4vw,32px);color:#70f4e5;margin:0}.help-goal{margin:0;color:#8ff9e6;font-size:clamp(10px,1.5vw,13px);font-weight:800}
 .help-steps{width:min(100%,850px);display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .help-step{border:1px solid #387baf;border-radius:10px;background:#0b2642;padding:8px;display:flex;align-items:center;flex-direction:column;gap:6px;justify-content:center;min-width:0}
 .help-step strong{color:#74f6e3;font-size:clamp(12px,2vw,18px)}
@@ -241,9 +241,10 @@ html,body,#game,#game *{
  <h2>遊び方 / ミッション説明</h2>
  <div class="help-steps">
   <div class="help-step"><div class="help-icon">🛡️</div><strong>① 基本操作：TAP</strong><span>ウイルスが下の盾の位置に来た瞬間、対応するレーンをタップ！</span></div>
-  <div class="help-step"><div class="help-icon">⚠️</div><strong>② 高速ウイルス</strong><span>警告が出たレーンに高速で侵入。⚠️① → ⚠️②の順番を見極めよう！</span></div>
+  <div class="help-step"><div class="help-icon">⚠️</div><strong>② 高速ウイルス</strong><span>警告が出たレーンに高速侵入！ 後半は⚠️1〜5の5連続攻撃も登場。</span></div>
   <div class="help-step"><div class="help-icon">🔒</div><strong>③ セキュリティウォール：HOLD</strong><span>水色の帯を長押しして防御を維持。終点で離す！ もう片方の手でTAPもできるよ。</span></div>
  </div>
+ <p class="help-goal">🏆 1曲最後まで守ればCLEAR！　🔓 漏洩3回でゲームオーバー</p>
  <div class="help-actions"><button id="menuBack" class="menu-btn">‹ もどる</button><button id="helpGo" class="menu-btn">▶ スタート</button></div>
 </section>
 <header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.13</div><h1>漏らすな！<span>個人情報！</span></h1></div>
@@ -890,7 +891,7 @@ const GAME_URL='https://sectorlab-jp.github.io/morasu-na/';
 function resultShareText(){
  const top=counts.map((n,i)=>({n,i})).sort((a,b)=>b.n-a.n).slice(0,3)
   .map(x=>NAMES[x.i]+' ×'+x.n).join(' / ');
- return (clearState?'🏆 1曲クリア！ ':'🛡️ 漏らすな！個人情報！ ')+score.toLocaleString('ja-JP')+'点！\n'+
+ return (clearState?'🏆 漏らすな！個人情報！ 1曲クリア！ ':'🛡️ 漏らすな！個人情報！ ')+score.toLocaleString('ja-JP')+'点！\n'+
    top+'\n'+GAME_URL+'\n#漏らすな個人情報\n制作：@SectorLab_JP';
 }
 function shareMessage(msg){
