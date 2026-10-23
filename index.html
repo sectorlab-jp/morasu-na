@@ -259,10 +259,172 @@ html,body{
  -webkit-user-select:none!important;
  user-select:none!important;
 }
+
+/* v1.22: A dedicated, legible two-column result screen. The old five-column
+   virus grid and tiny PNG were squashed inside the landscape arena. */
+.panel-heading{display:flex;flex-direction:column;align-items:center;gap:7px;max-width:100%}
+.panel-heading .shield-icon{font-size:36px}
+.result-score[hidden],.virus-details[hidden]{display:none!important}
+#cover.is-result{
+ background:#061525;
+ padding:7px;
+}
+#cover.is-result .panel{
+ display:grid;
+ grid-template-columns:minmax(0,.87fr) minmax(0,1.13fr);
+ grid-template-areas:
+  "heading preview"
+  "details preview"
+  "retry actions"
+  "links links"
+  "feedback feedback";
+ grid-template-rows:auto auto auto auto auto;
+ align-items:center;
+ align-content:center;
+ column-gap:15px;
+ row-gap:7px;
+ overflow-x:hidden;
+ overflow-y:auto;
+ max-height:100%;
+ padding:7px;
+ text-align:left;
+}
+#cover.is-result .panel-heading{
+ grid-area:heading;
+ text-align:left;
+ align-items:flex-start;
+ justify-content:center;
+ gap:4px;
+ min-width:0;
+}
+#cover.is-result .shield-icon{display:none}
+#cover.is-result #title{
+ font-size:clamp(20px,2.8vw,28px);
+ line-height:1.17;
+ margin:0;
+ color:#77fbe9;
+}
+#cover.is-result #desc{
+ font-size:clamp(10px,1.6vw,12px);
+ line-height:1.4;
+ margin:0;
+ text-align:left;
+}
+#cover.is-result .result-score{display:flex;flex-direction:column;align-items:flex-start;gap:1px;margin-top:3px}
+#cover.is-result .result-score-label{color:#95cde0;font-weight:800;font-size:10px;letter-spacing:1.4px}
+#cover.is-result #resultScoreValue{font-size:clamp(32px,5vw,46px);line-height:1.05;color:#fff;font-weight:950;font-variant-numeric:tabular-nums}
+#cover.is-result #resultStats{font-size:clamp(10px,1.45vw,12px);color:#cae7f2;line-height:1.45;white-space:normal}
+#cover.is-result .virus-details{
+ grid-area:details;
+ background:#112c43;
+ border:1px solid #40718d;
+ border-radius:9px;
+ padding:6px 9px;
+ min-width:0;
+ align-self:start;
+}
+#cover.is-result .virus-details summary{
+ display:flex;
+ cursor:pointer;
+ align-items:center;
+ justify-content:space-between;
+ gap:8px;
+ color:#e8fbff;
+ font-size:clamp(11px,1.65vw,13px);
+ line-height:1.45;
+ font-weight:750;
+ list-style:none;
+ touch-action:manipulation;
+}
+#cover.is-result .virus-details summary::-webkit-details-marker{display:none}
+#cover.is-result .virus-details summary .detail-hint{font-size:10px;white-space:nowrap;color:#79f2df}
+#cover.is-result .virus-details[open] .detail-hint{font-size:0}
+#cover.is-result .virus-details[open] .detail-hint::after{content:"閉じる";font-size:10px}
+#cover.is-result .result{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:5px;
+ margin-top:8px;
+ width:100%;
+ max-height:135px;
+ overflow-y:auto;
+ font-size:11px;
+ text-align:left;
+}
+#cover.is-result .result div{
+ padding:5px 6px;
+ font-size:11px;
+ line-height:1.35;
+ white-space:normal;
+ overflow-wrap:anywhere;
+ text-overflow:clip;
+}
+#cover.is-result #start{
+ grid-area:retry;
+ width:100%;
+ min-width:0;
+ padding:9px 12px;
+ font-size:clamp(13px,2vw,17px);
+ align-self:center;
+}
+#cover.is-result #shareImageBlock{
+ grid-area:preview;
+ align-self:center;
+ justify-self:stretch;
+ width:100%;
+ max-width:100%;
+ margin:0;
+ min-height:0;
+ display:flex;
+}
+#cover.is-result #sharePreview{
+ display:block;
+ width:100%;
+ height:auto;
+ max-width:520px;
+ max-height:230px;
+ object-fit:contain;
+ border-radius:9px;
+}
+#cover.is-result #imageStatus{font-size:12px}
+#cover.is-result #shareActions{
+ grid-area:actions;
+ display:grid;
+ grid-template-columns:1.35fr 1fr 1fr;
+ gap:5px;
+ align-self:center;
+ justify-self:stretch;
+ width:100%;
+}
+#cover.is-result #shareActions .share{
+ min-width:0;
+ font-size:clamp(10px,1.45vw,12px);
+ line-height:1.3;
+ padding:10px 5px;
+ white-space:normal;
+}
+#cover.is-result #resultLinks{
+ grid-area:links;
+ justify-content:center;
+ font-size:12px;
+ gap:18px;
+}
+#cover.is-result #shareMessage{grid-area:feedback;text-align:center}
+#cover.is-result #shareFallback{grid-area:feedback;justify-self:center;max-width:95%;max-height:95px}
+/* The regular overlay (start/pause) remains unchanged. */
+@media(max-width:520px){
+ #cover.is-result .panel{
+  grid-template-columns:minmax(0,1fr);
+  grid-template-areas:"heading" "preview" "actions" "retry" "details" "links" "feedback";
+  align-content:start;
+ }
+ #cover.is-result #sharePreview{max-height:180px}
+}
+
 </style></head>
 <body><div id="game">
 <section id="menuScreen" role="region" aria-label="タイトル画面">
- <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.21</span></div>
+ <div class="menu-header"><span>TECHNO RHYTHM DEFENSE</span><span class="menu-version">V1.22</span></div>
  <h2 class="menu-title">漏らすな！<strong>個人情報！</strong></h2>
  <p class="menu-copy">情報漏洩する<em>企業ウィルス</em>から自身を守れ！<br>タイミングよくブロックだ！</p>
  <div class="menu-scene" aria-hidden="true">
@@ -284,12 +446,13 @@ html,body{
  <p class="help-goal">🏆 1曲最後まで守ればCLEAR！　🔓 漏洩3回でゲームオーバー</p>
  <div class="help-actions"><button id="menuBack" class="menu-btn">‹ もどる</button><button id="helpGo" class="menu-btn">▶ スタート</button></div>
 </section>
-<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.21</div><h1>漏らすな！<span>個人情報！</span></h1></div>
+<header><div><div class="kicker">TECHNO RHYTHM DEFENSE V1.22</div><h1>漏らすな！<span>個人情報！</span></h1></div>
 <div class="switches"><button id="bgm">🎵 BGM ON</button><button id="sfx">🔔 SE ON</button></div></header>
 <div class="landscape-nudge"><span>↻</span> スマホを横向きにしてプレイ <span class="five">5 LANES</span></div><div class="stats"><div class="stat"><small>SCORE</small><strong id="score">0</strong></div><div class="stat"><small>COMBO</small><strong id="combo">0</strong></div><div class="stat"><small>BEST</small><strong id="best">0</strong></div><div class="stat"><small>漏洩</small><strong id="leaks">0/3</strong></div></div>
 <div class="beatbar"><span>♪ <b id="bpm">128</b> BPM</span><div class="beatdots"><b>1</b><b>2</b><b>3</b><b>4</b></div><span id="clock">00:00</span></div>
 <div class="arena" id="arena"><canvas id="canvas"></canvas><div class="hint"><span>🛡️ 5-LANE DEFENSE</span><span id="warning">拍に合わせて防御！</span></div><div id="judgement"></div>
-<div class="cover" id="cover"><div class="panel"><div style="font-size:36px">🛡️</div><h2 id="title">5レーン防衛！ TAP ＋ HOLD</h2><p id="desc">📱 横持ちで両手プレイ！<br>【TAP】判定ラインで1回タップ。<br>【HOLD】水色の帯は押し続けて、終点で離そう！<br>⚠️①・⚠️②は高速ウイルスの予告。</p><div class="result" id="result" hidden></div><button id="start" class="main">▶ ゲームスタート</button><div id="shareImageBlock" class="share-image-block" hidden><img id="sharePreview" alt="スコア・撃退数・コンボを表示したX共有用リザルト画像" hidden><span id="imageStatus">画像を生成中…</span></div>
+<div class="cover" id="cover"><div class="panel"><div class="panel-heading"><div class="shield-icon" aria-hidden="true">🛡️</div><h2 id="title">5レーン防衛！ TAP ＋ HOLD</h2><p id="desc">📱 横持ちで両手プレイ！<br>【TAP】判定ラインで1回タップ。<br>【HOLD】水色の帯は押し続けて、終点で離そう！<br>⚠️①・⚠️②は高速ウイルスの予告。</p><div id="resultScore" class="result-score" hidden><div class="result-score-label">SCORE</div><strong id="resultScoreValue">0</strong><div id="resultStats"></div></div></div>
+<details id="virusDetails" class="virus-details" hidden><summary>🦠 撃退した企業ウイルスの内訳 <span class="detail-hint">表示</span></summary><div class="result" id="result" hidden></div></details><button id="start" class="main">▶ ゲームスタート</button><div id="shareImageBlock" class="share-image-block" hidden><img id="sharePreview" alt="スコア・撃退数・コンボを表示したX共有用リザルト画像" hidden><span id="imageStatus">画像を生成中…</span></div>
 <div id="shareActions" class="share-actions" hidden><button id="share" class="share" type="button" disabled>📤 画像付きで共有</button><button id="copyScore" class="share" type="button">📋 投稿文をコピー</button><button id="saveImage" class="share" type="button" disabled>⬇️ 画像を保存</button></div><p id="shareMessage" class="share-message" role="status" aria-live="polite" hidden></p><textarea id="shareFallback" aria-label="共有する文章" readonly hidden></textarea><div id="resultLinks" class="result-links" hidden><a href="https://sectorlab-jp.github.io/" target="_blank" rel="noopener noreferrer">🎮 ゲームラボ</a><a href="https://x.com/SectorLab_JP" target="_blank" rel="noopener noreferrer">𝕏 制作：セクターラボ</a></div></div></div></div>
 
 <div class="foot"><span>PERFECT / GREAT / GOOD / MISS<br>TAP：押す ／ HOLD：押し続けて終点で離す</span><button id="pause">一時停止</button><div class="syncbox" role="group" aria-label="リズム調整"><button id="syncMinus" aria-label="リズム調整 −20ミリ秒">−</button><div class="sync-readout"><span class="sync-title">🎵 リズム調整</span><span id="syncLabel" aria-live="polite">0ms</span></div><button id="syncPlus" aria-label="リズム調整 ＋20ミリ秒">＋</button></div></div>
@@ -476,9 +639,29 @@ async function start(){
  trackDurationMs=Math.min(TRACK_BARS,completeBars)*barSeconds*1000;
  $('#music-note').textContent=usingGarageBand?'高速：シロイヌタケル便 ｜ BGM：My Song 3（128 BPM）':'高速：シロイヌタケル便 ｜ BGM：内蔵テクノ（My Song 3音源待ち）';
  $('#start').disabled=false;$('#start').textContent='▶ ゲームスタート';
- mode='play';clearState=false;score=combo=maxCombo=leaks=hits=perfect=0;pointerHolds.clear();counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;audioAnchorContext=null;audioAnchorOffsetSeconds=0;pausedSongElapsed=0;startAt=performance.now()+950;flashLanes=Array(5).fill(0);$('#cover').hidden=true;$('#result').hidden=true;resetResultShare();$('#shareActions').hidden=true;$('#resultLinks').hidden=true;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt);if(usingGarageBand)playClip(startAt,0)}
-function finish(cleared=false){if(mode!=='play')return;mode='over';clearState=!!cleared;pointerHolds.clear();stopClip();save();$('#title').textContent=cleared?'🏆 CLEAR！ 個人情報を守りきった！':'🔓 情報漏洩！';$('#desc').textContent='SCORE '+score.toLocaleString('ja-JP')+' / 撃退 '+hits+'体 / 最大コンボ '+maxCombo+' / PERFECT '+perfect;$('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');$('#result').hidden=false;$('#shareActions').hidden=false;$('#resultLinks').hidden=false;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#start').textContent='↻ もう一度';$('#cover').hidden=false;prepareResultImage();silence()}
-function pause(){if(mode!=='play')return;for(const e of notes){if(e.type==='hold'&&e.status===3){e.status=4;e.pointerId=null}}pointerHolds.clear();pausedAt=performance.now();pausedSongElapsed=(usingGarageBand&&ac&&audioAnchorContext!==null)?Math.max(0,audibleAudioTime()-audioAnchorContext+audioAnchorOffsetSeconds):Math.max(0,(pausedAt-startAt)/1000);mode='pause';$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#shareImageBlock').hidden=true;$('#shareActions').hidden=true;$('#resultLinks').hidden=true;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
+ mode='play';clearState=false;$('#cover').classList.remove('is-result');$('#virusDetails').open=false;$('#virusDetails').hidden=true;$('#resultScore').hidden=true;score=combo=maxCombo=leaks=hits=perfect=0;pointerHolds.clear();counts.fill(0);notes=[];cues=[];nextChunk=0;nextAudioHalf=0;nextCue=0;stepIndex=0;previousLane=1;previousBeat=-3;curBeat=-1;bt.length=1;bt[0]=0;audioAnchorContext=null;audioAnchorOffsetSeconds=0;pausedSongElapsed=0;startAt=performance.now()+950;flashLanes=Array(5).fill(0);$('#cover').hidden=true;$('#result').hidden=true;resetResultShare();$('#shareActions').hidden=true;$('#resultLinks').hidden=true;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#pause').textContent='一時停止';restore();if(fx&&ac)fx.gain.setTargetAtTime(sfxOn?.75:0,ac.currentTime,.015);ensure(startAt);hud(startAt);if(usingGarageBand)playClip(startAt,0)}
+function finish(cleared=false){
+ if(mode!=='play')return;
+ mode='over';clearState=!!cleared;pointerHolds.clear();stopClip();save();
+ $('#cover').classList.add('is-result');
+ $('#title').textContent=cleared?'🏆 CLEAR！':'🔓 GAME OVER';
+ $('#desc').textContent=cleared?'個人情報を守りきった！':'情報漏洩！ 次こそ守りきろう！';
+ $('#resultScoreValue').textContent=score.toLocaleString('ja-JP');
+ $('#resultStats').textContent='撃退 '+hits+'体  /  MAX COMBO '+maxCombo+'  /  PERFECT '+perfect;
+ $('#resultScore').hidden=false;
+ // Always allow opening the complete breakdown, without cramming all names
+ // into five unreadable landscape columns on the main result view.
+ $('#result').innerHTML=NAMES.map((n,i)=>'<div>'+n+' ×'+counts[i]+'</div>').join('');
+ $('#result').hidden=false;
+ $('#virusDetails').open=false;$('#virusDetails').hidden=false;
+ $('#shareActions').hidden=false;$('#resultLinks').hidden=false;
+ $('#shareMessage').hidden=true;$('#shareFallback').hidden=true;
+ $('#start').textContent='↻ もう一度';
+ $('#cover').hidden=false;
+ prepareResultImage();
+ silence();
+}
+function pause(){if(mode!=='play')return;for(const e of notes){if(e.type==='hold'&&e.status===3){e.status=4;e.pointerId=null}}pointerHolds.clear();pausedAt=performance.now();pausedSongElapsed=(usingGarageBand&&ac&&audioAnchorContext!==null)?Math.max(0,audibleAudioTime()-audioAnchorContext+audioAnchorOffsetSeconds):Math.max(0,(pausedAt-startAt)/1000);mode='pause';$('#cover').classList.remove('is-result');$('#virusDetails').hidden=true;$('#resultScore').hidden=true;$('#title').textContent='⏸ 一時停止';$('#desc').textContent='レーンと拍を見て、防御を再開しよう！';$('#result').hidden=true;$('#shareImageBlock').hidden=true;$('#shareActions').hidden=true;$('#resultLinks').hidden=true;$('#shareMessage').hidden=true;$('#shareFallback').hidden=true;$('#start').textContent='▶ 再開';$('#cover').hidden=false;$('#pause').textContent='再開';silence();stopClip()}
 async function resume(){if(mode!=='pause')return;await unlock();const elapsed=pausedSongElapsed;startAt+=performance.now()-pausedAt;mode='play';$('#cover').hidden=true;$('#pause').textContent='一時停止';restore();if(usingGarageBand)playClip(performance.now(),elapsed)}
 function gradeAt(ms){return ms<=43?'PERFECT':ms<=88?'GREAT':'GOOD'}
 function missNote(e,text='🔓 MISS!'){
