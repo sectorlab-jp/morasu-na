@@ -412,7 +412,9 @@ html,body{
 #cover.is-result #shareMessage{grid-area:feedback;text-align:center}
 #cover.is-result #shareFallback{grid-area:feedback;justify-self:center;max-width:95%;max-height:95px}
 /* The regular overlay (start/pause) remains unchanged. */
-@media(max-width:520px){
+/* Portrait iPhones are CSS-rotated into landscape, so the page's
+   portrait media width must NOT collapse this overlay to one column. */
+@media (orientation:landscape) and (max-width:520px){
  #cover.is-result .panel{
   grid-template-columns:minmax(0,1fr);
   grid-template-areas:"heading" "preview" "actions" "retry" "details" "links" "feedback";
